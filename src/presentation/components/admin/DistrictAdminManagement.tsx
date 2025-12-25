@@ -7,6 +7,9 @@ import { Input } from '../Input';
 import { ViewDetailsDialog } from '../ViewDetailsDialog';
 import { EditMemberDialog } from '../EditMemberDialog';
 import { toast } from 'react-toastify';
+import noImage from "../../../assets/no-image.jpg";
+
+
 
 export const DistrictAdminManagement = () => {
     const [admins, setAdmins] = useState<any[]>([]);
@@ -71,16 +74,21 @@ export const DistrictAdminManagement = () => {
         }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
+    const handleCreate = async (e: React.FormEvent) => {       
         e.preventDefault();
         setIsLoading(true);
         try {
-            const formDataToSend = new FormData();
-            Object.entries(formData).forEach(([key, value]) => {
-                formDataToSend.append(key, value);
-            });
+                const formDataToSend = new FormData();
+
+        // Append text fields
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formDataToSend.append(key, String(value));
+            }
+        });
             if (photo) {
-                formDataToSend.append('photo', photo);
+               
+                 formDataToSend.append('photo', photo);
             }
 
             await AdminRepository.createDistrictAdmin(formDataToSend);
@@ -168,6 +176,7 @@ export const DistrictAdminManagement = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
+                             <th className="p-4 text-sm font-medium text-gray-500">Photo</th>
                                 <th className="p-4 text-sm font-medium text-gray-500">Name</th>
                                 <th className="p-4 text-sm font-medium text-gray-500">Email</th>
                                 <th className="p-4 text-sm font-medium text-gray-500">State</th>
@@ -179,6 +188,7 @@ export const DistrictAdminManagement = () => {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {admins.map((admin: any) => (
                                 <tr key={admin._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                                     <td className="p-4 font-medium text-gray-800 dark:text-gray-200"><img src={admin.photoUrl||noImage} alt="Admin Photo" className="w-10 h-10 rounded-full object-cover" /></td>
                                     <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{admin.name}</td>
                                     <td className="p-4 text-gray-600 dark:text-gray-400">{admin.email}</td>
                                     <td className="p-4 text-gray-600 dark:text-gray-400">{admin.state || 'N/A'}</td>

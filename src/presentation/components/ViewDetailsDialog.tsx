@@ -30,6 +30,11 @@ export const ViewDetailsDialog = ({ isOpen, onClose, data, title }: ViewDetailsD
                     </div>
 
                     <div className="p-6 space-y-4">
+                        {data.photoUrl && (
+                            <div className="flex justify-center mb-4">
+                                <img src={data.photoUrl} alt={data.name} className="w-32 h-32 rounded-lg object-cover border border-gray-300 shadow-sm" />
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>

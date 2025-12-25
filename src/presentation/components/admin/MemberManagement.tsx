@@ -79,6 +79,7 @@ export const MemberManagement = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                             <tr>
+                                <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Image</th>
                                 <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Name</th>
                                 <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Email</th>
                                 <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Status</th>
@@ -89,6 +90,13 @@ export const MemberManagement = () => {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {members.map((member) => (
                                 <tr key={member._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                                    <td className="p-4">
+                                        {member.photoUrl ? (
+                                            <img src={member.photoUrl} alt={member.name} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">No Img</div>
+                                        )}
+                                    </td>
                                     <td className="p-4">
                                         <div className="font-medium text-gray-800 dark:text-gray-200">{member.name}</div>
                                         <div className="text-xs text-gray-400">{member.phone}</div>
@@ -151,7 +159,7 @@ export const MemberManagement = () => {
                             ))}
                             {members.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="p-8 text-center text-gray-500">No members found.</td>
+                                    <td colSpan={6} className="p-8 text-center text-gray-500">No members found.</td>
                                 </tr>
                             )}
                         </tbody>

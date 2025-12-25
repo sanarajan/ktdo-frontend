@@ -2,12 +2,11 @@ import api from '../../config/axios';
 import type { DistrictAdmin, Driver, User } from '@driver-app/shared';
 
 export const AdminRepository = {
-    createDistrictAdmin: async (data: any): Promise<DistrictAdmin> => {
-        let headers = {};
-        if (data instanceof FormData) {
-            headers = { 'Content-Type': 'multipart/form-data' };
-        }
-        const response = await api.post('/admin/district-admin', data, { headers });
+    createDistrictAdmin: async (data: FormData): Promise<DistrictAdmin> => {
+      
+        const response = await api.post('/admin/district-admin', data, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
         return response.data.data;
     },
 
@@ -37,11 +36,9 @@ export const AdminRepository = {
     },
 
     updateMember: async (memberId: string, updateData: any): Promise<Driver> => {
-        let headers = {};
-        if (updateData instanceof FormData) {
-            headers = { 'Content-Type': 'multipart/form-data' };
-        }
-        const response = await api.patch(`/admin/members/${memberId}`, updateData, { headers });
+        const response = await api.patch(`/admin/members/${memberId}`, updateData,{
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
         return response.data.data;
     }
 };

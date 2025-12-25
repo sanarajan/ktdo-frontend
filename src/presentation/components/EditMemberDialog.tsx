@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { AdminRepository } from '../../data/repositories/AdminRepository';
 import { LocationRepository } from '../../data/repositories/LocationRepository';
 import { UserRole } from '../../common/enums';
+import noImage from "../../assets/no-image.jpg";
 
 interface EditMemberDialogProps {
     isOpen: boolean;
@@ -35,6 +36,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
     const [isLoading, setIsLoading] = useState(false);
     const [states, setStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
+const [preview, setPreview] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchStates = async () => {
@@ -66,7 +68,8 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                 bloodGroup: member.bloodGroup || '',
                 emergencyContact: member.emergencyContact || ''
             });
-            setPhoto(null); // Reset photo input on new member load
+             setPreview(member.photoUrl || noImage);
+        setPhoto(null);
             if (member.state) {
                 fetchDistricts(member.state);
             }
@@ -91,22 +94,28 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             setDistricts([]);
         }
     };
+const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        setPhoto(file);
+        setPreview(URL.createObjectURL(file));
+    }
+};
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const formDataToSend = new FormData();
-            Object.entries(formData).forEach(([key, value]) => {
-                // For District Admin, we might want to filter out empty fields if they are irrelevant, 
-                // but the backend update ignores undefined. However, FormData sends everything as string.
-                // We should only append what we want to send. 
-                // But simplifying: just send what is in state.
-                formDataToSend.append(key, value);
-            });
-            if (photo) {
-                formDataToSend.append('photo', photo);
+          const formDataToSend = new FormData();
+Object.entries(formData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formDataToSend.append(key, String(value));
             }
+        });
+
+if (photo) {
+    formDataToSend.append('photo', photo);
+}
 
             await AdminRepository.updateMember(member._id, formDataToSend);
             toast.success('Member updated successfully');
@@ -126,7 +135,8 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
         <Dialog open={isOpen} onClose={onClose} className="relative z-50">
             <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-            <div className="fixed inset-0 flex items-center justify-center p-4">
+<div className="fixed inset-0 flex items-start justify-center p-4 overflow-y-auto">
+
                 <Dialog.Panel className="mx-auto max-w-2xl w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl">
                     <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
                         <Dialog.Title className="text-xl font-bold text-gray-800 dark:text-white">
@@ -201,10 +211,17 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+                                  onChange={handlePhotoChange}
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-700 dark:file:text-gray-300"
                             />
                         </div>
+                        <div className="flex justify-center mb-4">
+    <img
+        src={preview || "/no-image.jpg"}
+        alt="Preview"
+        className="w-28 h-28 rounded-full object-cover border"
+    />
+</div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
                             <div className="flex flex-col gap-1">

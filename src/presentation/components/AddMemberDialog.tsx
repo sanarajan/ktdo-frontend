@@ -96,13 +96,19 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         setLoading(true);
 
         try {
-            const data = new FormData();
-            Object.entries(formData).forEach(([key, value]) => {
-                data.append(key, value);
-            });
+
+            // 
+             const data = new FormData();
+             Object.entries(formData).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    data.append(key, String(value));
+                }
+             });
             if (photo) {
-                data.append('photo', photo);
+               
+                 data.append('photo', photo);
             }
+            //      
 
             await axios.post('/admin/member', data, {
                 headers: { 'Content-Type': 'multipart/form-data' },
