@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { ApprovalStatus } from '../../../common/enums';
 import clsx from 'clsx';
 import { FaPlus } from 'react-icons/fa';
+import  {getBase64} from '../../../utils/ImageHelper';
 
 export const MemberManagement = () => {
     const [members, setMembers] = useState<any[]>([]);
@@ -48,19 +49,31 @@ export const MemberManagement = () => {
     };
 
     const handlePrintId = async (member: any) => {
-        try {
-            const blob = await pdf(<IdCardDocument driver={member} />).toBlob();
-            if (blob) {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } else {
-                toast.error('Failed to generate PDF Blob');
-            }
-        } catch (error) {
-            console.error('PDF Generation Error:', error);
-            toast.error('Failed to generate ID Card');
+    try {
+        const base64Image = await getBase64(member.photoUrl);
+const blob = await pdf(
+    <IdCardDocument key={Date.now()} driver={{ ...member, photoUrl: base64Image }} />
+).toBlob();
+        // const blob = await pdf(
+        //     <IdCardDocument
+        //         key={Date.now()}   // 🔥 force re-render
+        //         driver={member}
+        //     />
+        // ).toBlob();
+
+        if (!blob) {
+            toast.error('Failed to generate PDF Blob');
+            return;
         }
-    };
+
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+    } catch (error) {
+        console.error('PDF Generation Error:', error);
+        toast.error('Failed to generate ID Card');
+    }
+};
+
 
     return (
         <div className="space-y-6">
