@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store';
 import { logout } from '../../store/authSlice';
+import { AuthRepository } from '../../data/repositories/AuthRepository';
 import { pdf } from '@react-pdf/renderer';
 import IdCardDocument from '../components/admin/IdCardDocument';
 import { toast } from 'react-toastify';
@@ -20,8 +21,16 @@ const MemberDashboard = () => {
         }
     }, [user, navigate]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await AuthRepository.logout();
+        } catch (err) {
+            console.warn('Logout API failed, proceeding to clear client state', err);
+        }
         dispatch(logout());
+        // Try clearing any non-httpOnly cookies just in case
+        document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.cookie = 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         navigate('/');
     };
 
@@ -49,9 +58,9 @@ const MemberDashboard = () => {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="min-h-screen bg-black">
             {/* Header */}
-            <nav className="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700">
+            <nav className="bg-black border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-2">
@@ -60,7 +69,7 @@ const MemberDashboard = () => {
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+                            className="flex items-center gap-2 px-4 py-2 bg-brand text-black font-medium rounded-lg hover:bg-brand-600 transition"
                         >
                             <FaSignOutAlt /> Logout
                         </button>
@@ -77,10 +86,10 @@ const MemberDashboard = () => {
 
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Profile Card */}
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+                    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center">
-                                <FaUser className="text-white text-xl" />
+                            <div className="bg-brand w-12 h-12 rounded-full flex items-center justify-center">
+                                <FaUser className="text-black text-xl" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Profile Information</h3>
                         </div>
@@ -108,16 +117,16 @@ const MemberDashboard = () => {
                             </div>
                             <div>
                                 <label className="text-gray-400 text-sm">Address</label>
-                                <p className="text-white font-medium">{(user as any).address || 'N/A'}</p>
+                                <p className="text-white font-medium">{`${(user as any).houseName || ''}${(user as any).houseName && (user as any).place ? ', ' : ''}${(user as any).place || 'N/A'}`}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* ID Card Section */}
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+                    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center">
-                                <FaIdCard className="text-white text-xl" />
+                            <div className="bg-brand w-12 h-12 rounded-full flex items-center justify-center">
+                                <FaIdCard className="text-black text-xl" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Driver ID Card</h3>
                         </div>
@@ -138,7 +147,7 @@ const MemberDashboard = () => {
                                 <button
                                     onClick={handleDownloadIdCard}
                                     disabled={isGeneratingPDF}
-                                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-brand text-black font-semibold rounded-lg hover:bg-brand-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <FaDownload />
                                     {isGeneratingPDF ? 'Generating...' : 'View/Print ID Card'}

@@ -6,7 +6,8 @@ export interface User {
     name: string;
     role: UserRole;
     phone?: string;
-    address?: string;
+    houseName?: string;
+    place?: string;
     isBlocked?: boolean;
     createdAt?: string | Date;
     updatedAt?: string | Date;
@@ -19,14 +20,10 @@ export interface DistrictAdmin extends User {
 
 export interface Driver extends User {
     districtAdminId: string;
-    licenseNumber: string;
-    vehicleNumber: string;
     state?: string;
     district?: string;
-    post?: string;
     pin?: string;
     bloodGroup?: string;
-    emergencyContact?: string;
     status: ApprovalStatus;
     uniqueId?: string;
     photoUrl?: string;

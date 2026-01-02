@@ -23,4 +23,10 @@ export const AuthRepository = {
         });
         return response.data.data;
     }
+    ,
+    logout: async () => {
+        // Call backend to clear httpOnly refresh token cookie
+        const response = await api.post('/auth/logout');
+        return response.data;
+    }
 };

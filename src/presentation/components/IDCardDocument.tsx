@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     marginBottom: 5,
-    color: "darkblue",
+    color: "black",
   },
   label: {
     fontSize: 6,
@@ -82,11 +82,7 @@ const IDCardDocument = ({ driver }: IDCardProps) => (
           <Text style={styles.label}>Name</Text>
           <Text style={styles.value}>{driver.name}</Text>
 
-          <Text style={styles.label}>Vehicle Number</Text>
-          <Text style={styles.value}>{driver.vehicleNumber}</Text>
-
-          <Text style={styles.label}>License Number</Text>
-          <Text style={styles.value}>{driver.licenseNumber}</Text>
+          {/* Vehicle and License removed from card */}
 
           <Text style={styles.idNumber}>{driver.uniqueId}</Text>
         </View>

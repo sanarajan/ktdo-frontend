@@ -68,8 +68,10 @@ function App() {
 
           {/* Auth Routes (Accessible only if NOT logged in) */}
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
           <Route path="/admin" element={<PublicRoute><LoginPage /></PublicRoute>} />
+
+          {/* Member Registration (Always accessible - NOT auth-related) */}
+          <Route path="/register" element={<RegisterPage />} />
 
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

@@ -32,41 +32,61 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <div className="max-w-md w-full p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
-                <div className="flex flex-col items-center mb-6">
-                    <img src="/logo.png" alt="KTDO Logo" className="w-24 h-24 object-contain mb-4" />
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
-                        Welcome Back
-                    </h2>
+        <div className="min-h-screen flex items-center justify-center bg-black p-4">
+            <div className="max-w-[450px] w-full bg-white rounded-[2rem] shadow-2xl relative overflow-hidden">
+                
+                {/* Decorative Yellow Line */}
+                <div className="absolute top-[4.5rem] left-0 w-full h-4 bg-brand"></div>
+
+                <div className="relative z-10 px-10 pt-8 pb-12">
+                    {/* Logo Section */}
+                    <div className="flex justify-center mb-6">
+                        <div className="w-28 h-28 bg-white rounded-full p-2 shadow-lg flex items-center justify-center relative z-10">
+                            <img src="/logo.png" alt="KTDO Logo" className="w-full h-full object-contain" />
+                        </div>
+                    </div>
+
+                    {/* Header Text */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                        <p className="text-gray-500">Please enter your details to sign in</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                        <Input
+                            label="Email Address"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="name@company.com"
+                            className="bg-white border-gray-200 focus:border-brand focus:ring-brand"
+                        />
+                        <Input
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            placeholder="Enter your •••"
+                            className="bg-white border-gray-200 focus:border-brand focus:ring-brand"
+                        />
+                        <Button 
+                            type="submit" 
+                            isLoading={isLoading} 
+                            className="mt-4 w-full bg-brand text-black font-bold hover:bg-brand-400 shadow-md py-3 rounded-xl"
+                        >
+                            Sign In
+                        </Button>
+                    </form>
+                    
+                    <p className="mt-8 text-center text-sm text-gray-500">
+                        Don't have an account?{' '}
+                        <Link to="/register" className="text-brand-600 hover:text-brand-700 font-bold">
+                            Register as Driver
+                        </Link>
+                    </p>
                 </div>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                    <Input
-                        label="Email Address"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="Enter your email"
-                    />
-                    <Input
-                        label="Password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        placeholder="Enter your password"
-                    />
-                    <Button type="submit" isLoading={isLoading} className="mt-2">
-                        Sign In
-                    </Button>
-                </form>
-                <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                    Don't have an account?{' '}
-                    <Link to="/register" className="text-indigo-600 hover:text-indigo-500 font-medium">
-                        Register as Driver
-                    </Link>
-                </p>
             </div>
         </div>
     );

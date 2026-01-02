@@ -15,8 +15,18 @@ export const AdminRepository = {
         return response.data.data;
     },
 
-    getMembers: async (): Promise<Driver[]> => {
-        const response = await api.get('/admin/members');
+    getMembers: async (params?: { page?: number; limit?: number; search?: string }): Promise<{ members: Driver[]; pagination: { total: number; page: number; totalPages: number; limit: number } }> => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append('page', params.page.toString());
+        if (params?.limit) queryParams.append('limit', params.limit.toString());
+        if (params?.search) queryParams.append('search', params.search);
+        
+        const response = await api.get(`/admin/members?${queryParams.toString()}`);
+        return { members: response.data.data, pagination: response.data.pagination };
+    },
+
+    updateMemberStatus: async (memberId: string, action: 'APPROVED' | 'REJECTED', reason?: string): Promise<Driver> => {
+        const response = await api.patch(`/admin/members/${memberId}/status`, { action, reason });
         return response.data.data;
     },
 
@@ -35,10 +45,24 @@ export const AdminRepository = {
         return response.data.data;
     },
 
+    deleteDistrictAdmin: async (adminId: string): Promise<void> => {
+        await api.delete(`/admin/district-admin/${adminId}`);
+    },
+
     updateMember: async (memberId: string, updateData: any): Promise<Driver> => {
         const response = await api.patch(`/admin/members/${memberId}`, updateData,{
   headers: { 'Content-Type': 'multipart/form-data' }
 });
+        return response.data.data;
+    },
+
+    recordPrintId: async (memberId: string): Promise<Driver> => {
+        const response = await api.post(`/admin/members/${memberId}/print-record`);
+        return response.data.data;
+    },
+
+    deleteMember: async (memberId: string): Promise<{ softDeleted: boolean }> => {
+        const response = await api.delete(`/admin/members/${memberId}`);
         return response.data.data;
     }
 };

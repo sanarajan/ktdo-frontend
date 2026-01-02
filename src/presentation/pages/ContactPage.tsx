@@ -20,9 +20,9 @@ const ContactPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="min-h-screen bg-black">
             {/* Navigation */}
-            <nav className="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700">
+            <nav className="bg-black border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <Link to="/" className="flex items-center gap-2">
@@ -33,7 +33,7 @@ const ContactPage = () => {
                             <Link to="/" className="text-gray-300 hover:text-white transition">Home</Link>
                             <Link to="/about" className="text-gray-300 hover:text-white transition">About</Link>
                             <Link to="/contact" className="text-white font-medium">Contact</Link>
-                            <Link to="/admin" className="text-indigo-400 hover:text-indigo-300 transition font-medium">Admin</Link>
+                            <Link to="/register" className="text-brand hover:text-brand-400 transition font-medium">Register</Link>
                         </div>
                     </div>
                 </div>
@@ -46,13 +46,13 @@ const ContactPage = () => {
                 <div className="grid md:grid-cols-2 gap-8">
                     {/* Contact Information */}
                     <div className="space-y-6">
-                        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+                        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
                             <h2 className="text-2xl font-bold text-white mb-6">Get in Touch</h2>
 
                             <div className="space-y-4">
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-indigo-600 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <FaMapMarkerAlt className="text-white" />
+                                    <div className="bg-brand w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <FaMapMarkerAlt className="text-black text-xl" />
                                     </div>
                                     <div>
                                         <h3 className="text-white font-semibold mb-1">Address</h3>
@@ -61,8 +61,8 @@ const ContactPage = () => {
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-indigo-600 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <FaPhone className="text-white" />
+                                    <div className="bg-brand w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <FaPhone className="text-black text-xl" />
                                     </div>
                                     <div>
                                         <h3 className="text-white font-semibold mb-1">Phone</h3>
@@ -71,8 +71,8 @@ const ContactPage = () => {
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-indigo-600 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <FaEnvelope className="text-white" />
+                                    <div className="bg-brand w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <FaEnvelope className="text-black text-xl" />
                                     </div>
                                     <div>
                                         <h3 className="text-white font-semibold mb-1">Email</h3>
@@ -103,7 +103,7 @@ const ContactPage = () => {
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-brand"
                                     required
                                 />
                             </div>
@@ -114,7 +114,7 @@ const ContactPage = () => {
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-brand"
                                     required
                                 />
                             </div>
@@ -125,7 +125,7 @@ const ContactPage = () => {
                                     type="text"
                                     value={formData.subject}
                                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-brand"
                                     required
                                 />
                             </div>
@@ -136,14 +136,14 @@ const ContactPage = () => {
                                     value={formData.message}
                                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                     rows={5}
-                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 resize-none"
+                                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-brand resize-none"
                                     required
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                                className="w-full bg-brand text-black py-3 rounded-lg font-semibold hover:bg-brand-600 transition flex items-center justify-center gap-2"
                             >
                                 <FaPaperPlane /> Send Message
                             </button>

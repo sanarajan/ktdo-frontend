@@ -27,21 +27,14 @@ export const DetailsDialog: FC<DetailsDialogProps> = ({ isOpen, onClose, driver 
                             <label className="text-xs text-gray-500 uppercase">Email</label>
                             <p className="font-medium text-gray-900 dark:text-gray-200">{driver.email}</p>
                         </div>
-                        <div>
-                            <label className="text-xs text-gray-500 uppercase">License Number</label>
-                            <p className="font-medium text-gray-900 dark:text-gray-200">{driver.licenseNumber}</p>
-                        </div>
-                        <div>
-                            <label className="text-xs text-gray-500 uppercase">Vehicle Number</label>
-                            <p className="font-medium text-gray-900 dark:text-gray-200">{driver.vehicleNumber}</p>
-                        </div>
+                        {/* License and vehicle fields removed */}
                         <div>
                             <label className="text-xs text-gray-500 uppercase">Phone</label>
                             <p className="font-medium text-gray-900 dark:text-gray-200">{driver.phone || 'N/A'}</p>
                         </div>
                         <div>
                             <label className="text-xs text-gray-500 uppercase">Address</label>
-                            <p className="font-medium text-gray-900 dark:text-gray-200">{driver.address || 'N/A'}</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-200">{`${(driver as any).houseName || ''}${(driver as any).houseName && (driver as any).place ? ', ' : ''}${(driver as any).place || 'N/A'}`}</p>
                         </div>
                     </div>
 
@@ -55,7 +48,7 @@ export const DetailsDialog: FC<DetailsDialogProps> = ({ isOpen, onClose, driver 
                             </span>
                         </div>
                         {driver.uniqueId && (
-                            <div className="mt-2 text-center p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded text-indigo-700 dark:text-indigo-300 font-mono">
+                            <div className="mt-2 text-center p-2 bg-brand/10 dark:bg-brand/20 rounded text-brand dark:text-brand-300 font-mono">
                                 ID: {driver.uniqueId}
                             </div>
                         )}
