@@ -1,5 +1,19 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { Driver } from '../../../common/types';
+import { API_BASE_URL } from '../../../common/constants';
+
+const getImageUrl = (url?: string) => {
+    if (!url) return 'https://via.placeholder.com/150';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    
+    // Remove /api from the end of API_BASE_URL to get the server root
+    const serverUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+    
+    // Ensure url doesn't start with /
+    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+    
+    return `${serverUrl}/${cleanUrl}`;
+};
 
 // Portrait Card dimensions
 // 53.98mm = ~153.01 pt (Width)
@@ -33,8 +47,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 10,
-        justifyContent: 'center'
+        paddingHorizontal: 15,
+        justifyContent: 'flex-start'
     },
     photoContainer: {
         width: 50,
@@ -169,7 +183,7 @@ const IdCardDocument: React.FC<IdCardDocumentProps> = ({ driver }) => (
                     <Image
                         style={styles.photo}
                         src={{
-                            uri: driver.photoUrl || 'https://via.placeholder.com/150',
+                            uri: getImageUrl(driver.photoUrl),
                             method: 'GET',
                             headers: { "Cache-Control": "no-cache" },
                             body: ""

@@ -16,6 +16,8 @@ import { RejectReasonDialog } from '../components/RejectReasonDialog';
 import { toast } from 'react-toastify';
 import { FaSignOutAlt, FaUser, FaPlus } from 'react-icons/fa';
 import clsx from 'clsx';
+import { getBase64 } from '../../utils/ImageHelper';
+import { API_BASE_URL } from '../../common/constants';
 
 const DistrictAdminDashboard = () => {
     const dispatch = useDispatch();
@@ -84,8 +86,26 @@ const DistrictAdminDashboard = () => {
 
     const handlePrintId = async (member: any) => {
         try {
+            // Prepare image URL
+            let photoUrl = member.photoUrl;
+            if (photoUrl && !photoUrl.startsWith('http') && !photoUrl.startsWith('data:')) {
+                 const serverUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+                 const cleanUrl = photoUrl.startsWith('/') ? photoUrl.slice(1) : photoUrl;
+                 photoUrl = `${serverUrl}/${cleanUrl}`;
+            }
+
+            // Convert to base64 to ensure it renders in PDF
+            let base64Image = null;
+            if (photoUrl) {
+                try {
+                    base64Image = await getBase64(photoUrl);
+                } catch (err) {
+                    console.error('Failed to load image for PDF', err);
+                }
+            }
+
             // Generate and open PDF
-            const blob = await pdf(<IdCardDocument driver={member} />).toBlob();
+            const blob = await pdf(<IdCardDocument driver={{...member, photoUrl: base64Image || member.photoUrl}} />).toBlob();
             if (blob) {
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
