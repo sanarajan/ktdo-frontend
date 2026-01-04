@@ -15,11 +15,14 @@ export const AdminRepository = {
         return response.data.data;
     },
 
-    getMembers: async (params?: { page?: number; limit?: number; search?: string }): Promise<{ members: Driver[]; pagination: { total: number; page: number; totalPages: number; limit: number } }> => {
+    getMembers: async (params?: { page?: number; limit?: number; search?: string; bloodGroup?: string; stateRtoCode?: string; status?: string }): Promise<{ members: Driver[]; pagination: { total: number; page: number; totalPages: number; limit: number } }> => {
         const queryParams = new URLSearchParams();
         if (params?.page) queryParams.append('page', params.page.toString());
         if (params?.limit) queryParams.append('limit', params.limit.toString());
         if (params?.search) queryParams.append('search', params.search);
+        if (params?.bloodGroup) queryParams.append('bloodGroup', params.bloodGroup);
+        if (params?.stateRtoCode) queryParams.append('stateRtoCode', params.stateRtoCode);
+        if (params?.status) queryParams.append('status', params.status);
         
         const response = await api.get(`/admin/members?${queryParams.toString()}`);
         return { members: response.data.data, pagination: response.data.pagination };

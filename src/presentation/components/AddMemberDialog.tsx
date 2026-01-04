@@ -294,6 +294,28 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
             });
 
             toast.success('Member added successfully');
+            
+            // Clear form after successful submission
+            setFormData({
+                name: '',
+                email: '',
+                phone: '',
+                bloodGroup: '',
+                state: user?.role === UserRole.DISTRICT_ADMIN ? (user as any).state : '',
+                district: user?.role === UserRole.DISTRICT_ADMIN ? (user as any).district : '',
+                houseName: '',
+                place: '',
+                pin: '',
+                stateCode: user?.role === UserRole.DISTRICT_ADMIN ? (stateCodes.find(s => s.state === (user as any).state)?.code || '') : '',
+                rtoCode: '',
+                stateRtoCode: ''
+            });
+            setPhoto(null);
+            setPhotoPreview('');
+            setPhotoError('');
+            setPhotoInfo('');
+            setErrors({});
+            
             onSuccess();
             onClose();
         } catch (error: any) {

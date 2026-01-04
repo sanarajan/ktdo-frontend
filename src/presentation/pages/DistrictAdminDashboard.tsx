@@ -25,6 +25,9 @@ const DistrictAdminDashboard = () => {
     const { user } = useSelector((state: RootState) => state.auth);
     const [members, setMembers] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [bloodGroup, setBloodGroup] = useState('');
+    const [stateRtoCode, setStateRtoCode] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
@@ -50,14 +53,17 @@ const DistrictAdminDashboard = () => {
 
     useEffect(() => {
         fetchMembers();
-    }, [currentPage, itemsPerPage, searchTerm]);
+    }, [currentPage, itemsPerPage, searchTerm, bloodGroup, stateRtoCode, statusFilter]);
 
     const fetchMembers = async () => {
         try {
             const response = await AdminRepository.getMembers({
                 page: currentPage,
                 limit: itemsPerPage,
-                search: searchTerm
+                search: searchTerm,
+                bloodGroup,
+                stateRtoCode,
+                status: statusFilter
             });
             console.log('Fetched Members for District Admin:', response);
             if (response && Array.isArray(response.members)) {
@@ -232,11 +238,11 @@ const DistrictAdminDashboard = () => {
                 </div>
 
                 {/* Search and Add Member */}
-                <div className="mb-8 p-1 bg-[#1a1a1a] rounded-xl">
+                <div className="mb-8 p-1 bg-[#1a1a1a] rounded-xl space-y-3">
                     <div className="flex gap-4">
                         <input
                             type="text"
-                            placeholder="Search by name, email, or vehicle number..."
+                            placeholder="Search by name, email, or phone..."
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
@@ -250,6 +256,40 @@ const DistrictAdminDashboard = () => {
                         >
                             <FaPlus /> Add Member
                         </button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <select
+                            value={bloodGroup}
+                            onChange={(e) => { setBloodGroup(e.target.value); setCurrentPage(1); }}
+                            className="px-3 py-2 rounded-lg border border-gray-600 bg-[#242424] text-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                        >
+                            <option value="">All Blood Groups</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                        <input
+                            type="text"
+                            placeholder="RTO Code (e.g., KL-01)..."
+                            value={stateRtoCode}
+                            onChange={(e) => { setStateRtoCode(e.target.value); setCurrentPage(1); }}
+                            className="px-3 py-2 rounded-lg border border-gray-600 bg-[#242424] text-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                        />
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                            className="px-3 py-2 rounded-lg border border-gray-600 bg-[#242424] text-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                        >
+                            <option value="">All Status</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="REJECTED">Rejected</option>
+                        </select>
                     </div>
                 </div>
 

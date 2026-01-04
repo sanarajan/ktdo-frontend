@@ -17,6 +17,7 @@ export const DistrictAdminManagement = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [viewAdmin, setViewAdmin] = useState<any>(null);
     const [editAdmin, setEditAdmin] = useState<any>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -347,6 +348,18 @@ export const DistrictAdminManagement = () => {
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white">Existing District Admins</h3>
+                
+                {/* Search Field */}
+                <div className="mb-6">
+                    <Input
+                        type="text"
+                        placeholder="Search by name, email, phone, state, or district..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full max-w-md"
+                    />
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-brand text-black border-b border-brand-600">
@@ -361,7 +374,17 @@ export const DistrictAdminManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {admins.map((admin: any) => (
+                            {admins.filter((admin: any) => {
+                                if (!searchTerm) return true;
+                                const search = searchTerm.toLowerCase();
+                                return (
+                                    admin.name?.toLowerCase().includes(search) ||
+                                    admin.email?.toLowerCase().includes(search) ||
+                                    admin.phone?.toLowerCase().includes(search) ||
+                                    admin.state?.toLowerCase().includes(search) ||
+                                    admin.district?.toLowerCase().includes(search)
+                                );
+                            }).map((admin: any) => (
                                 <tr key={admin._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
                                      <td className="p-4 font-medium text-gray-800 dark:text-gray-200"><img src={admin.photoUrl||noImage} alt="Admin Photo" className="w-10 h-10 rounded-full object-cover" /></td>
                                     <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{admin.name}</td>

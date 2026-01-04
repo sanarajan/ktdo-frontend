@@ -18,6 +18,9 @@ import { UserRole } from '../../../common/enums';
 export const MemberManagement = () => {
     const [members, setMembers] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [bloodGroup, setBloodGroup] = useState('');
+    const [stateRtoCode, setStateRtoCode] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
@@ -34,7 +37,10 @@ export const MemberManagement = () => {
             const { members: data, pagination } = await AdminRepository.getMembers({
                 page: currentPage,
                 limit: itemsPerPage,
-                search: searchTerm
+                search: searchTerm,
+                bloodGroup,
+                stateRtoCode,
+                status: statusFilter
             });
             console.log('Fetched Members:', data);
             if (Array.isArray(data)) {
@@ -55,11 +61,15 @@ export const MemberManagement = () => {
 
     useEffect(() => {
         fetchMembers();
-    }, [currentPage, searchTerm, itemsPerPage]);
+    }, [currentPage, searchTerm, itemsPerPage, bloodGroup, stateRtoCode, statusFilter]);
 
     // Reset to page 1 when search changes
     const handleSearch = (value: string) => {
         setSearchTerm(value);
+        setCurrentPage(1);
+    };
+
+    const handleFilterChange = () => {
         setCurrentPage(1);
     };
 
@@ -114,14 +124,48 @@ const blob = await pdf(
                 )}
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-4">
                 <input
                     type="text"
-                    placeholder="Search by name, email, or phone number..."
+                    placeholder="Search by name, email, phone, state, or district..."
                     value={searchTerm}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <select
+                        value={bloodGroup}
+                        onChange={(e) => { setBloodGroup(e.target.value); handleFilterChange(); }}
+                        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    >
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    <input
+                        type="text"
+                        placeholder="RTO Code (e.g., KL-01)..."
+                        value={stateRtoCode}
+                        onChange={(e) => { setStateRtoCode(e.target.value); handleFilterChange(); }}
+                        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => { setStatusFilter(e.target.value); handleFilterChange(); }}
+                        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    >
+                        <option value="">All Status</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                    </select>
+                </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
