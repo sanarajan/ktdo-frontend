@@ -80,12 +80,7 @@ const LoginPage = () => {
                         </Button>
                     </form>
                     
-                    <p className="mt-8 text-center text-sm text-gray-500">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-brand-600 hover:text-brand-700 font-bold">
-                            Register as Driver
-                        </Link>
-                    </p>
+                  
                 </div>
             </div>
         </div>
