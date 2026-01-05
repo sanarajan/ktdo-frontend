@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FaUserPlus, FaSignInAlt, FaIdCard, FaShieldAlt, FaUsers } from 'react-icons/fa';
 
+
 const HomePage = () => {
     return (
         <div className="min-h-screen bg-brand">
@@ -89,7 +90,7 @@ const HomePage = () => {
             <footer className="bg-black border-t border-gray-800 mt-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center text-gray-400">
-                        <p>&copy; {new Date().getFullYear()} Karuna Taxi Driver's Organization (KTDO). All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} Kerala Taxi Driver's Organization (KTDO). All rights reserved.</p>
                     </div>
                 </div>
             </footer>
