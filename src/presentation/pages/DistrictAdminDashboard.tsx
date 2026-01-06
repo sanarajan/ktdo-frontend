@@ -241,15 +241,18 @@ const DistrictAdminDashboard = () => {
                                     <FaChevronDown className="text-xs" />
                                 </button>
                                 {showUserMenu && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-[#242424] border border-gray-700 rounded-lg shadow-lg z-50">
+                                    <div className="absolute right-0 mt-3 w-56 bg-[#242424] border border-gray-600 rounded-xl shadow-2xl shadow-black/50 z-50 overflow-hidden backdrop-blur-sm">
                                         <button
                                             onClick={() => {
                                                 setShowUserMenu(false);
                                                 setShowResetPassword(true);
                                             }}
-                                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 rounded-t-lg transition"
+                                            className="w-full px-5 py-3 text-left text-white hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 transition-all duration-200 flex items-center gap-3 group"
                                         >
-                                            Reset Password
+                                            <svg className="w-4 h-4 text-gray-400 group-hover:text-brand transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                            </svg>
+                                            <span className="font-medium">Reset Password</span>
                                         </button>
                                     </div>
                                 )}
