@@ -13,11 +13,14 @@ import { ViewDetailsDialog } from '../components/ViewDetailsDialog';
 import { EditMemberDialog } from '../components/EditMemberDialog';
 import { ConfirmationDialog } from '../components/ConfirmationDialog';
 import { RejectReasonDialog } from '../components/RejectReasonDialog';
+import { ResetPasswordForm } from '../components/ResetPasswordForm';
 import { toast } from 'react-toastify';
-import { FaSignOutAlt, FaUser, FaPlus } from 'react-icons/fa';
+import { FaSignOutAlt, FaUser, FaPlus, FaChevronDown } from 'react-icons/fa';
 import clsx from 'clsx';
 import { getBase64 } from '../../utils/ImageHelper';
 import { API_BASE_URL } from '../../common/constants';
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
+import { ERROR_MESSAGES } from '../../common/errorMessages';
 
 const DistrictAdminDashboard = () => {
     const dispatch = useDispatch();
@@ -50,10 +53,20 @@ const DistrictAdminDashboard = () => {
         member: any | null;
     }>({ isOpen: false, member: null });
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showResetPassword, setShowResetPassword] = useState(false);
 
     useEffect(() => {
         fetchMembers();
     }, [currentPage, itemsPerPage, searchTerm, bloodGroup, stateRtoCode, statusFilter]);
+
+    useEffect(() => {
+        const handleClickOutside = () => setShowUserMenu(false);
+        if (showUserMenu) {
+            document.addEventListener('click', handleClickOutside);
+        }
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showUserMenu]);
 
     const fetchMembers = async () => {
         try {
@@ -83,10 +96,10 @@ const DistrictAdminDashboard = () => {
     const handleBlockToggle = async (id: string) => {
         try {
             await AdminRepository.toggleBlockStatus(id);
-            toast.success('Member status updated');
+            toast.success(SUCCESS_MESSAGES.MEMBER_STATUS_UPDATED);
             fetchMembers();
         } catch (error) {
-            toast.error('Failed to update status');
+            toast.error(ERROR_MESSAGES.STATUS_UPDATE_FAILED);
         }
     };
 
@@ -124,11 +137,11 @@ const DistrictAdminDashboard = () => {
                     // Don't show error to user - PDF was still generated successfully
                 }
             } else {
-                toast.error('Failed to generate PDF Blob');
+                toast.error(ERROR_MESSAGES.PDF_GENERATION_FAILED);
             }
         } catch (error) {
             console.error('PDF Generation Error:', error);
-            toast.error('Failed to generate ID Card');
+            toast.error(ERROR_MESSAGES.ID_CARD_GENERATION_FAILED);
         }
     };
 
@@ -142,7 +155,7 @@ const DistrictAdminDashboard = () => {
             setRejectReasonDialog({ isOpen: false, memberId: null });
             setViewMember(null);
         } catch (error) {
-            toast.error('Failed to update member status');
+            toast.error(ERROR_MESSAGES.MEMBER_STATUS_UPDATE_FAILED);
         } finally {
             setApprovalLoadingId(null);
         }
@@ -180,7 +193,7 @@ const DistrictAdminDashboard = () => {
             setViewMember(null);
             await fetchMembers();
         } catch (error) {
-            toast.error('Failed to delete member');
+            toast.error(ERROR_MESSAGES.MEMBER_DELETE_FAILED);
         } finally {
             setDeleteLoading(false);
         }
@@ -215,9 +228,31 @@ const DistrictAdminDashboard = () => {
                             </h1>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-white">
-                                <FaUser />
-                                <span>{user?.name}</span>
+                            <div className="relative">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowUserMenu(!showUserMenu);
+                                    }}
+                                    className="flex items-center gap-2 text-white hover:text-brand transition"
+                                >
+                                    <FaUser />
+                                    <span>{user?.name}</span>
+                                    <FaChevronDown className="text-xs" />
+                                </button>
+                                {showUserMenu && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-[#242424] border border-gray-700 rounded-lg shadow-lg z-50">
+                                        <button
+                                            onClick={() => {
+                                                setShowUserMenu(false);
+                                                setShowResetPassword(true);
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 rounded-t-lg transition"
+                                        >
+                                            Reset Password
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <button
                                 onClick={handleLogout}
@@ -530,6 +565,15 @@ const DistrictAdminDashboard = () => {
                     onCancel={() => setDeleteDialog({ isOpen: false, member: null })}
                     isLoading={deleteLoading}
                 />
+
+                {/* Reset Password Dialog */}
+                {showResetPassword && (
+                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                        <div className="relative">
+                            <ResetPasswordForm onClose={() => setShowResetPassword(false)} />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

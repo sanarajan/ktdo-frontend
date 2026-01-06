@@ -8,6 +8,8 @@ import { pdf } from '@react-pdf/renderer';
 import IdCardDocument from '../components/admin/IdCardDocument';
 import { toast } from 'react-toastify';
 import { FaIdCard, FaUser, FaSignOutAlt, FaDownload } from 'react-icons/fa';
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
+import { ERROR_MESSAGES } from '../../common/errorMessages';
 
 const MemberDashboard = () => {
     const dispatch = useDispatch();
@@ -43,13 +45,13 @@ const MemberDashboard = () => {
             if (blob) {
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
-                toast.success('ID Card generated successfully!');
+                toast.success(SUCCESS_MESSAGES.ID_CARD_GENERATED);
             } else {
-                toast.error('Failed to generate PDF Blob');
+                toast.error(ERROR_MESSAGES.PDF_GENERATION_FAILED);
             }
         } catch (error) {
             console.error('PDF Generation Error:', error);
-            toast.error('Failed to generate ID Card');
+            toast.error(ERROR_MESSAGES.ID_CARD_GENERATION_FAILED);
         } finally {
             setIsGeneratingPDF(false);
         }

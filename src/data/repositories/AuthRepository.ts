@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { User, Driver } from '@driver-app/shared';
+import type { User, Driver } from '../../common/types';
 
 // Re-export types if needed or use directly
 export interface LoginResponse {
@@ -27,6 +27,11 @@ export const AuthRepository = {
     logout: async () => {
         // Call backend to clear httpOnly refresh token cookie
         const response = await api.post('/auth/logout');
+        return response.data;
+    },
+
+    resetPassword: async (currentPassword: string, newPassword: string) => {
+        const response = await api.post('/auth/reset-password', { currentPassword, newPassword });
         return response.data;
     }
 };

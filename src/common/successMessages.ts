@@ -1,0 +1,15 @@
+export const SUCCESS_MESSAGES = {
+    LOGIN_SUCCESS: 'Login Successful',
+    LOGOUT_SUCCESS: 'Logout successful',
+    REGISTRATION_SUCCESS: 'Registration successful! Please wait for approval.',
+    MEMBER_ADDED: 'Member added successfully',
+    MEMBER_UPDATED: 'Member updated successfully',
+    DISTRICT_ADMIN_CREATED: 'District Admin created successfully',
+    MESSAGE_SENT: 'Message sent! We will get back to you soon.',
+    PASSWORD_RESET_SUCCESS: 'Password reset successful! Please login with your new password.',
+    ADMIN_STATUS_UPDATED: 'Admin status updated',
+    DISTRICT_ADMIN_DELETED: 'District admin deleted',
+    ID_CARD_GENERATED: 'ID Card generated successfully!',
+    MEMBER_STATUS_UPDATED: 'Member status updated',
+    PASSWORD_RESET_LOGIN: 'Password reset successful. Please login again.',
+} as const;

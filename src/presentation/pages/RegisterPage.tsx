@@ -7,6 +7,8 @@ import { Input } from '../components/Input';
 import { toast } from 'react-toastify';
 import { ApprovalStatus, UserRole } from '../../common/enums';
 import { ImageValidator } from '../../utils/ImageValidator';
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
+import { ERROR_MESSAGES } from '../../common/errorMessages';
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
@@ -210,7 +212,7 @@ const RegisterPage = () => {
 
         // Validate photo is selected
         if (!photo) {
-            toast.error('Please upload a valid passport size photo');
+            toast.error(ERROR_MESSAGES.INVALID_PHOTO);
             return;
         }
 
@@ -248,17 +250,17 @@ const RegisterPage = () => {
         if (!formData.pin.trim()) {
             newErrors.pin = 'Pin code is required';
         } else if (!pinRegex.test(formData.pin)) {
-            newErrors.pin = 'Pin code must be exactly 6 digits';
+            newErrors.pin = ERROR_MESSAGES.PIN_CODE_INVALID;
         }
         if (!formData.rtoCode.trim()) {
-            newErrors.rtoCode = 'RTO code is required';
+            newErrors.rtoCode = ERROR_MESSAGES.RTO_CODE_REQUIRED;
         } else if (!/^\d{1,2}$/.test(formData.rtoCode)) {
-            newErrors.rtoCode = 'RTO code must be numeric (1-2 digits)';
+            newErrors.rtoCode = ERROR_MESSAGES.RTO_CODE_INVALID;
         }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            toast.error('Please fix the errors in the form');
+            toast.error(ERROR_MESSAGES.FORM_ERRORS);
             return;
         }
 
@@ -275,12 +277,12 @@ const RegisterPage = () => {
             data.append('photo', photo);
 
             await AuthRepository.registerDriver(data);
-            toast.success('Registration successful! Please wait for approval.');
+            toast.success(SUCCESS_MESSAGES.REGISTRATION_SUCCESS);
             setTimeout(() => {
                 navigate('/');
             }, 2000);
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Registration failed';
+            const errorMessage = error.response?.data?.message || ERROR_MESSAGES.REGISTRATION_FAILED;
             
             // Check if it's a phone or email already exists error
             if (errorMessage.toLowerCase().includes('phone')) {

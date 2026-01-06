@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { DistrictAdminManagement } from '../components/admin/DistrictAdminManagement';
 import { MemberManagement } from '../components/admin/MemberManagement';
-import { FaUsers, FaUserShield, FaChartPie, FaSignOutAlt } from 'react-icons/fa';
+import { ResetPasswordForm } from '../components/ResetPasswordForm';
+import { FaUsers, FaUserShield, FaChartPie, FaSignOutAlt, FaKey } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import { AuthRepository } from '../../data/repositories/AuthRepository';
 import { useNavigate } from 'react-router-dom';
 
 const MainAdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'district-admins' | 'members'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'district-admins' | 'members' | 'reset-password'>('overview');
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -30,6 +31,13 @@ const MainAdminDashboard = () => {
                 return <DistrictAdminManagement />;
             case 'members':
                 return <MemberManagement />;
+            case 'reset-password':
+                return (
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Reset Password</h2>
+                        <ResetPasswordForm />
+                    </div>
+                );
             case 'overview':
             default:
                 return (
@@ -76,6 +84,7 @@ const MainAdminDashboard = () => {
                     <NavItem id="overview" label="Overview" icon={FaChartPie} />
                     <NavItem id="district-admins" label="District Admins" icon={FaUserShield} />
                     <NavItem id="members" label="Members" icon={FaUsers} />
+                    <NavItem id="reset-password" label="Reset Password" icon={FaKey} />
                 </nav>
 
                 <div className="p-4 border-t border-gray-800">

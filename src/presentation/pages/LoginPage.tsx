@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthRepository } from '../../data/repositories/AuthRepository';
 import { setCredentials } from '../../store/authSlice';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { toast } from 'react-toastify';
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
+import { ERROR_MESSAGES } from '../../common/errorMessages';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -21,10 +23,10 @@ const LoginPage = () => {
         try {
             const data = await AuthRepository.login(email, password);
             dispatch(setCredentials({ user: data.user, token: data.tokens.accessToken }));
-            toast.success('Login Successful');
+            toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
             navigate('/dashboard'); // Should redirect based on role
         } catch (error: any) {
-            const message = error.response?.data?.message || 'Login failed. Please try again.';
+            const message = error.response?.data?.message || ERROR_MESSAGES.LOGIN_FAILED;
             toast.error(message);
         } finally {
             setIsLoading(false);

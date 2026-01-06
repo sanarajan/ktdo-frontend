@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { FaTimes } from 'react-icons/fa';
 import { Input } from './Input';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store';
 import { Button } from './Button';
 import { toast } from 'react-toastify';
 import { AdminRepository } from '../../data/repositories/AdminRepository';
@@ -11,6 +9,8 @@ import { LocationRepository } from '../../data/repositories/LocationRepository';
 import { UserRole } from '../../common/enums';
 import { ImageValidator } from '../../utils/ImageValidator';
 import noImage from "../../assets/no-image.jpg";
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
+import { ERROR_MESSAGES } from '../../common/errorMessages';
 
 interface EditMemberDialogProps {
     isOpen: boolean;
@@ -38,7 +38,6 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
     const [photoError, setPhotoError] = useState<string>('');
     const [photoInfo, setPhotoInfo] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
-    const { user } = useSelector((state: RootState) => state.auth);
     const [states, setStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
     const [stateCodes, setStateCodes] = useState<{ state: string; code: string }[]>([]);
@@ -101,6 +100,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             setPhoto(null);
             setPhotoError('');
             setPhotoInfo('');
+            setErrors({}); // Clear any previous validation errors when opening dialog for a new member
             if (member.state) {
                 fetchDistricts(member.state);
             }
@@ -291,7 +291,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
 
         if (Object.keys(newErrors).length) {
             setErrors(newErrors);
-            toast.error('Please fix the errors in the form');
+            toast.error(ERROR_MESSAGES.FORM_ERRORS);
             return;
         }
 
@@ -309,12 +309,12 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             }
 
             await AdminRepository.updateMember(member._id, formDataToSend);
-            toast.success('Member updated successfully');
+            toast.success(SUCCESS_MESSAGES.MEMBER_UPDATED);
             onSuccess();
             onClose();
         } catch (error: any) {
             console.error('Update error:', error);
-            const errorMessage = error.response?.data?.message || 'Failed to update member';
+            const errorMessage = error.response?.data?.message || ERROR_MESSAGES.MEMBER_UPDATE_FAILED;
             
             // Check if it's a phone or email already exists error
             if (errorMessage.toLowerCase().includes('phone')) {

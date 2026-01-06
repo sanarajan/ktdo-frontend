@@ -14,6 +14,8 @@ import  {getBase64} from '../../../utils/ImageHelper';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
 import { UserRole } from '../../../common/enums';
+import { SUCCESS_MESSAGES } from '../../../common/successMessages';
+import { ERROR_MESSAGES } from '../../../common/errorMessages';
 
 export const MemberManagement = () => {
     const [members, setMembers] = useState<any[]>([]);
@@ -76,10 +78,10 @@ export const MemberManagement = () => {
     const handleBlockToggle = async (id: string) => {
         try {
             await AdminRepository.toggleBlockStatus(id);
-            toast.success('Member status updated');
+            toast.success(SUCCESS_MESSAGES.MEMBER_STATUS_UPDATED);
             fetchMembers();
         } catch (error) {
-            toast.error('Failed to update status');
+            toast.error(ERROR_MESSAGES.STATUS_UPDATE_FAILED);
         }
     };
 
@@ -97,7 +99,7 @@ const blob = await pdf(
         // ).toBlob();
 
         if (!blob) {
-            toast.error('Failed to generate PDF Blob');
+            toast.error(ERROR_MESSAGES.PDF_GENERATION_FAILED);
             return;
         }
 
@@ -105,7 +107,7 @@ const blob = await pdf(
         window.open(url, '_blank');
     } catch (error) {
         console.error('PDF Generation Error:', error);
-        toast.error('Failed to generate ID Card');
+        toast.error(ERROR_MESSAGES.ID_CARD_GENERATION_FAILED);
     }
 };
 

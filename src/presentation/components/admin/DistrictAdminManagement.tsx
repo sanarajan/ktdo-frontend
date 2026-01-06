@@ -9,8 +9,8 @@ import { EditMemberDialog } from '../EditMemberDialog';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 import { toast } from 'react-toastify';
 import noImage from "../../../assets/no-image.jpg";
-
-
+import { SUCCESS_MESSAGES } from '../../../common/successMessages';
+import { ERROR_MESSAGES } from '../../../common/errorMessages';
 
 export const DistrictAdminManagement = () => {
     const [admins, setAdmins] = useState<any[]>([]);
@@ -164,7 +164,7 @@ export const DistrictAdminManagement = () => {
 
         if (Object.keys(newErrors).length) {
             setErrors(newErrors);
-            toast.error('Please fix the errors in the form');
+            toast.error(ERROR_MESSAGES.FORM_ERRORS);
             return;
         }
 
@@ -184,13 +184,13 @@ export const DistrictAdminManagement = () => {
             }
 
             await AdminRepository.createDistrictAdmin(formDataToSend);
-            toast.success('District Admin created successfully');
+            toast.success(SUCCESS_MESSAGES.DISTRICT_ADMIN_CREATED);
             setFormData({ name: '', email: '', password: '', phone: '', state: '', district: '', role: UserRole.DISTRICT_ADMIN });
             setPhoto(null);
             setErrors({});
             fetchAdmins();
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Failed to create admin';
+            const errorMessage = error.response?.data?.message || ERROR_MESSAGES.ADMIN_CREATION_FAILED;
             
             if (errorMessage.toLowerCase().includes('phone')) {
                 setErrors(prev => ({ ...prev, phone: errorMessage }));
@@ -209,11 +209,11 @@ export const DistrictAdminManagement = () => {
     const handleBlockToggle = async (id: string) => {
         try {
             await AdminRepository.toggleBlockStatus(id);
-            toast.success('Admin status updated');
+            toast.success(SUCCESS_MESSAGES.ADMIN_STATUS_UPDATED);
             fetchAdmins();
         } catch (error) {
             console.error('Failed to update status', error);
-            toast.error('Failed to update admin status');
+            toast.error(ERROR_MESSAGES.ADMIN_STATUS_UPDATE_FAILED);
         }
     };
 
@@ -226,11 +226,11 @@ export const DistrictAdminManagement = () => {
         try {
             setDeleteLoading(true);
             await AdminRepository.deleteDistrictAdmin(deleteDialog.adminId);
-            toast.success('District admin deleted');
+            toast.success(SUCCESS_MESSAGES.DISTRICT_ADMIN_DELETED);
             setDeleteDialog({ isOpen: false, adminId: null, adminName: '' });
             fetchAdmins();
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to delete admin');
+            toast.error(error.response?.data?.message || ERROR_MESSAGES.ADMIN_DELETE_FAILED);
         } finally {
             setDeleteLoading(false);
         }

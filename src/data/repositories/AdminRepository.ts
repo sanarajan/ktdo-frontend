@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { DistrictAdmin, Driver, User } from '@driver-app/shared';
+import type { DistrictAdmin, Driver, User } from '../../common/types';
 
 export const AdminRepository = {
     createDistrictAdmin: async (data: FormData): Promise<DistrictAdmin> => {

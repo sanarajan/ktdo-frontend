@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
 // import { SuccessMessage } from '@driver-app/shared'; // Removed as per revert request
 
 const ContactPage = () => {
@@ -15,7 +16,7 @@ const ContactPage = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         // TODO: Implement contact form submission
-        toast.success('Message sent! We will get back to you soon.');
+        toast.success(SUCCESS_MESSAGES.MESSAGE_SENT);
         setFormData({ name: '', email: '', subject: '', message: '' });
     };
 

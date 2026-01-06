@@ -8,6 +8,8 @@ import { UserRole } from '../../common/enums';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { ImageValidator } from '../../utils/ImageValidator';
+import { SUCCESS_MESSAGES } from '../../common/successMessages';
+import { ERROR_MESSAGES } from '../../common/errorMessages';
 
 interface AddMemberDialogProps {
     isOpen: boolean;
@@ -272,7 +274,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
 
         if (Object.keys(newErrors).length) {
             setErrors(newErrors);
-            toast.error('Please fix the errors in the form');
+            toast.error(ERROR_MESSAGES.FORM_ERRORS);
             return;
         }
 
@@ -293,7 +295,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            toast.success('Member added successfully');
+            toast.success(SUCCESS_MESSAGES.MEMBER_ADDED);
             
             // Clear form after successful submission
             setFormData({
@@ -319,7 +321,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
             onSuccess();
             onClose();
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Failed to add member';
+            const errorMessage = error.response?.data?.message || ERROR_MESSAGES.MEMBER_ADD_FAILED;
             
             // Check if it's a phone or email already exists error
             if (errorMessage.toLowerCase().includes('phone')) {

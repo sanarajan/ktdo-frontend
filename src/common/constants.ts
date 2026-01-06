@@ -1,11 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Cast import.meta to ensure env is typed even if editor tooling misses vite/client ambient types
+const env = (import.meta as ImportMeta & { env: ImportMetaEnv }).env;
+export const API_BASE_URL = env.VITE_API_URL || 'http://localhost:8080/api';
 
-export const SuccessMessage = {
-    LOGIN_SUCCESS: 'Login successful',
-    LOGOUT_SUCCESS: 'Logout successful',
-} as const;
-
-export const ErrorMessage = {
-    INVALID_CREDENTIALS: 'Invalid email or password',
-    ACCOUNT_BLOCKED: 'Your account has been blocked. Please contact admin.',
-} as const;
