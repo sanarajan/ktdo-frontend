@@ -86,31 +86,42 @@ export const MemberManagement = () => {
     };
 
     const handlePrintId = async (member: any) => {
-    try {
-        const base64Image = await getBase64(member.photoUrl);
-const blob = await pdf(
-    <IdCardDocument key={Date.now()} driver={{ ...member, photoUrl: base64Image }} />
-).toBlob();
-        // const blob = await pdf(
-        //     <IdCardDocument
-        //         key={Date.now()}   // 🔥 force re-render
-        //         driver={member}
-        //     />
-        // ).toBlob();
+        try {
+            const base64Image = await getBase64(member.photoUrl);
+            const blob = await pdf(
+                <IdCardDocument key={Date.now()} driver={{ ...member, photoUrl: base64Image }} />
+            ).toBlob();
 
-        if (!blob) {
-            toast.error(ERROR_MESSAGES.PDF_GENERATION_FAILED);
-            return;
+            if (!blob) {
+                toast.error(ERROR_MESSAGES.PDF_GENERATION_FAILED);
+                return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            
+            // Record the print in the database
+            try {
+                const updatedMember = await AdminRepository.recordPrintId(member._id);
+                
+                // Update the member in the list with the new print count
+                setMembers(prevMembers => 
+                    prevMembers.map(m => m._id === member._id ? { ...m, printCount: updatedMember.printCount } : m)
+                );
+                
+                // Also update the view dialog if it's open
+                if (viewMember && viewMember._id === member._id) {
+                    setViewMember({ ...viewMember, printCount: updatedMember.printCount });
+                }
+            } catch (recordError) {
+                console.warn('Failed to record print count', recordError);
+                // Don't show error to user - PDF was still generated successfully
+            }
+        } catch (error) {
+            console.error('PDF Generation Error:', error);
+            toast.error(ERROR_MESSAGES.ID_CARD_GENERATION_FAILED);
         }
-
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-    } catch (error) {
-        console.error('PDF Generation Error:', error);
-        toast.error(ERROR_MESSAGES.ID_CARD_GENERATION_FAILED);
-    }
-};
-
+    };
 
     return (
         <div className="space-y-6">

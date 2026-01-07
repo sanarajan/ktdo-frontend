@@ -1,96 +1,114 @@
 import { Link } from 'react-router-dom';
-import { FaUserPlus, FaSignInAlt, FaIdCard, FaShieldAlt, FaUsers } from 'react-icons/fa';
-
+import { motion } from 'framer-motion'; // Added for modern smooth animations
+import { FaUserPlus, FaSignInAlt, FaIdCard, FaShieldAlt, FaUsers, FaArrowRight } from 'react-icons/fa';
 
 const HomePage = () => {
     return (
-        <div className="min-h-screen bg-brand">
-            {/* Navigation */}
-            <nav className="bg-black border-b border-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-2">
-                            <img src="/logo.png" alt="KTDO Logo" className="w-8 h-8 object-contain" />
-                            <h1 className="text-xl font-bold text-white">KTDO</h1>
+        <div className="min-h-screen bg-[#050505] text-white selection:bg-brand selection:text-black">
+            
+            {/* Navigation - Ultra Modern Glass Style */}
+            <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-20">
+                        <div className="flex items-center gap-3">
+                            <motion.img 
+                                whileHover={{ rotate: 360 }}
+                                transition={{ duration: 0.5 }}
+                                src="/logo.png" alt="KTDO Logo" className="w-10 h-10 object-contain" 
+                            />
+                            <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-brand to-yellow-500 bg-clip-text text-transparent">
+                                KTDO
+                            </h1>
                         </div>
-                        <div className="flex items-center gap-6">
-                            <Link to="/" className="text-gray-300 hover:text-white transition">Home</Link>
-                            <Link to="/about" className="text-gray-300 hover:text-white transition">About</Link>
-                            <Link to="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
-                            <Link to="/register" className="text-brand hover:text-brand-400 transition font-medium">Register</Link>
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link to="/" className="text-sm font-medium text-brand hover:text-brand transition">Home</Link>
+                            <Link to="/about" className="text-sm font-medium text-gray-400 hover:text-brand transition">About</Link>
+                            <Link to="/contact" className="text-sm font-medium text-gray-400 hover:text-brand transition">Contact</Link>
+                            <Link to="/register" className="px-5 py-2.5 bg-brand text-black rounded-full text-sm font-bold hover:shadow-[0_0_20px_rgba(255,204,0,0.4)] transition-all">
+                                Register Now
+                            </Link>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            {/* Hero Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div className="text-center">
-                    <img src="/logo.png" alt="KTDO Logo" className="w-32 h-32 object-contain mx-auto mb-8 shadow-2xl rounded-full bg-black/10 p-2" />
-                    <h2 className="text-5xl font-extrabold text-black mb-6">
-                        Professional Driver Membership Platform
-                    </h2>
-                    <p className="text-xl text-gray-900 mb-12 max-w-3xl mx-auto font-medium">
-                        Join our community of professional drivers. Get your official ID card,
-                        access exclusive benefits, and connect with fellow drivers.
-                    </p>
+            {/* Hero Section - Visual Impact */}
+            <section className="relative pt-32 pb-20 overflow-hidden">
+                {/* Background Ambient Glow */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-10" />
+                
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand/30 bg-brand/10 text-brand text-xs font-bold mb-8 tracking-widest uppercase">
+                           <span className="relative flex h-2 w-2">
+                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                             <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                           </span>
+                           Version 2.0 Live
+                        </div>
+                        
+                        <h2 className="text-5xl lg:text-7xl font-black tracking-tight mb-8 leading-[1.1]">
+                            The Future of <br />
+                            <span className="text-brand">Professional Driving.</span>
+                        </h2>
+                        
+                        <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                            Empowering Kerala's taxi community with digital identity, verified security, and a robust professional network. 
+                        </p>
 
-                    {/* Hidden Login/Signup Buttons - Ready for Future Activation */}
-                    <div className="hidden gap-4 justify-center mb-16" id="driver-auth-buttons">
-                        <Link
-                            to="/register"
-                            className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-900 transition shadow-lg"
-                        >
-                            <FaUserPlus /> Sign Up Now
-                        </Link>
-                        <Link
-                            to="/login"
-                            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black border-2 border-black font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg"
-                        >
-                            <FaSignInAlt /> Member Login
-                        </Link>
-                    </div>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <Link to="/register" className="group w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-brand text-black font-black rounded-2xl hover:scale-105 transition-all shadow-xl">
+                                <FaUserPlus /> Join the Lobby
+                                <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                            <Link to="/admin" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all backdrop-blur-md">
+                                <FaSignInAlt /> Admin Login
+                            </Link>
+                        </div>
+                    </motion.div>
                 </div>
+            </section>
 
-                {/* Features Grid */}
-                <div className="grid md:grid-cols-3 gap-8 mt-20">
-                    <div className="bg-black p-8 rounded-xl border border-gray-800 hover:border-brand transition shadow-xl">
-                        <div className="bg-brand w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <FaIdCard className="text-2xl text-black" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Official ID Card</h3>
-                        <p className="text-gray-400">
-                            Get your professional driver ID card with unique identification number.
-                        </p>
-                    </div>
-
-                    <div className="bg-black p-8 rounded-xl border border-gray-800 hover:border-brand transition shadow-xl">
-                        <div className="bg-brand w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <FaShieldAlt className="text-2xl text-black" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Verified Status</h3>
-                        <p className="text-gray-400">
-                            Instant verification and approval for registered professional drivers.
-                        </p>
-                    </div>
-
-                    <div className="bg-black p-8 rounded-xl border border-gray-800 hover:border-brand transition shadow-xl">
-                        <div className="bg-brand w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <FaUsers className="text-2xl text-black" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Community Network</h3>
-                        <p className="text-gray-400">
-                            Join a network of professional drivers across multiple districts.
-                        </p>
-                    </div>
+            {/* Bento Grid Features */}
+            <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+                <div className="grid md:grid-cols-3 gap-6">
+                    {[
+                        { icon: <FaIdCard />, title: "Digital ID Card", desc: "Automated identification generation with unique member protocols.", color: "from-brand/20" },
+                        { icon: <FaShieldAlt />, title: "Verified Protocols", desc: "Multi-tier verification system ensuring community trust and safety.", color: "from-blue-500/10" },
+                        { icon: <FaUsers />, title: "Statewide Network", desc: "Seamlessly connecting drivers across all districts of Kerala.", color: "from-purple-500/10" }
+                    ].map((feature, idx) => (
+                        <motion.div 
+                            key={idx}
+                            whileHover={{ y: -10 }}
+                            className={`p-8 rounded-3xl bg-gradient-to-br ${feature.color} to-transparent border border-white/5 backdrop-blur-sm group hover:border-brand/40 transition-all shadow-2xl`}
+                        >
+                            <div className="bg-brand text-black w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-2xl shadow-[0_0_15px_rgba(255,204,0,0.3)]">
+                                {feature.icon}
+                            </div>
+                            <h3 className="text-xl font-black mb-4 group-hover:text-brand transition-colors">{feature.title}</h3>
+                            <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+                        </motion.div>
+                    ))}
                 </div>
-            </div>
+            </section>
 
-            {/* Footer */}
-            <footer className="bg-black border-t border-gray-800 mt-20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="text-center text-gray-400">
-                        <p>&copy; {new Date().getFullYear()} Kerala Taxi Driver's Organization (KTDO). All rights reserved.</p>
+            {/* Footer - Minimalist */}
+            <footer className="py-12 border-t border-white/5 bg-black">
+                <div className="max-w-7xl mx-auto px-6 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <img src="/logo.png" alt="Logo" className="w-8 h-8 opacity-50" />
+                        <p className="text-gray-500 text-xs tracking-[4px] uppercase font-bold">
+                            &copy; {new Date().getFullYear()} KTDO Ecosystem
+                        </p>
+                        <div className="flex gap-6 mt-4">
+                           <span className="h-[1px] w-12 bg-white/10 mt-2"></span>
+                           <p className="text-[10px] text-gray-600 font-mono italic">Built with MERN x Clean Architecture</p>
+                           <span className="h-[1px] w-12 bg-white/10 mt-2"></span>
+                        </div>
                     </div>
                 </div>
             </footer>

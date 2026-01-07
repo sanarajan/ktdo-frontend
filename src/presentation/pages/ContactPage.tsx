@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
+import { motion } from 'framer-motion'; // Added for modern smooth animations
+
 import { toast } from 'react-toastify';
 import { SUCCESS_MESSAGES } from '../../common/successMessages';
 // import { SuccessMessage } from '@driver-app/shared'; // Removed as per revert request
@@ -23,26 +25,34 @@ const ContactPage = () => {
     return (
         <div className="min-h-screen bg-black">
             {/* Navigation */}
-            <nav className="bg-black border-b border-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <Link to="/" className="flex items-center gap-2">
-                            <img src="/logo.png" alt="KTDO Logo" className="w-8 h-8 object-contain" />
-                            <h1 className="text-xl font-bold text-white">KTDO</h1>
-                        </Link>
-                        <div className="flex items-center gap-6">
-                            <Link to="/" className="text-gray-300 hover:text-white transition">Home</Link>
-                            <Link to="/about" className="text-gray-300 hover:text-white transition">About</Link>
-                            <Link to="/contact" className="text-white font-medium">Contact</Link>
-                            <Link to="/register" className="text-brand hover:text-brand-400 transition font-medium">Register</Link>
+                <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-20">
+                        <div className="flex items-center gap-3">
+                            <motion.img 
+                                whileHover={{ rotate: 360 }}
+                                transition={{ duration: 0.5 }}
+                                src="/logo.png" alt="KTDO Logo" className="w-10 h-10 object-contain" 
+                            />
+                            <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-brand to-yellow-500 bg-clip-text text-transparent">
+                                KTDO
+                            </h1>
+                        </div>
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link to="/" className="text-sm font-medium text-gray-400 hover:text-brand transition">Home</Link>
+                            <Link to="/about" className="text-sm font-medium text-gray-400 hover:text-brand transition">About</Link>
+                            <Link to="/contact" className="text-sm font-medium text-brand hover:text-brand transition">Contact</Link>
+                            <Link to="/register" className="px-5 py-2.5 bg-brand text-black rounded-full text-sm font-bold hover:shadow-[0_0_20px_rgba(255,204,0,0.4)] transition-all">
+                                Register Now
+                            </Link>
                         </div>
                     </div>
                 </div>
             </nav>
 
             {/* Content */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <h1 className="text-4xl font-bold text-white mb-8 text-center">Contact Us</h1>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 ">
+                <h1 className="text-4xl font-bold text-white mb-8 text-center mt-5">Contact Us</h1>
 
                 <div className="grid md:grid-cols-2 gap-8">
                     {/* Contact Information */}

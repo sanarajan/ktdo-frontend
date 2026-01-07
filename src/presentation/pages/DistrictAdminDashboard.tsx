@@ -131,7 +131,17 @@ const DistrictAdminDashboard = () => {
                 
                 // Record the print in the database
                 try {
-                    await AdminRepository.recordPrintId(member._id);
+                    const updatedMember = await AdminRepository.recordPrintId(member._id);
+                    
+                    // Update the member in the list with the new print count
+                    setMembers(prevMembers => 
+                        prevMembers.map(m => m._id === member._id ? { ...m, printCount: updatedMember.printCount } : m)
+                    );
+                    
+                    // Also update the view dialog if it's open
+                    if (viewMember && viewMember._id === member._id) {
+                        setViewMember({ ...viewMember, printCount: updatedMember.printCount });
+                    }
                 } catch (recordError) {
                     console.warn('Failed to record print count', recordError);
                     // Don't show error to user - PDF was still generated successfully

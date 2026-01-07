@@ -1,22 +1,30 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion'; // Added for modern smooth animations
 
 const AboutPage = () => {
     return (
         <div className="min-h-screen bg-black">
             {/* Navigation */}
-            <nav className="bg-black border-b border-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <Link to="/" className="flex items-center">
-                            <h1 className="text-2xl font-bold text-white">
-                                Driver<span className="text-brand">Connect</span>
+            <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-20">
+                        <div className="flex items-center gap-3">
+                            <motion.img 
+                                whileHover={{ rotate: 360 }}
+                                transition={{ duration: 0.5 }}
+                                src="/logo.png" alt="KTDO Logo" className="w-10 h-10 object-contain" 
+                            />
+                            <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-brand to-yellow-500 bg-clip-text text-transparent">
+                                KTDO
                             </h1>
-                        </Link>
-                        <div className="flex items-center gap-6">
-                            <Link to="/" className="text-gray-300 hover:text-white transition">Home</Link>
-                            <Link to="/about" className="text-white font-medium">About</Link>
-                            <Link to="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
-                            <Link to="/register" className="text-brand hover:text-brand-400 transition font-medium">Register</Link>
+                        </div>
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link to="/" className="text-sm font-medium text-gray-400 hover:text-brand transition">Home</Link>
+                            <Link to="/about" className="text-sm font-medium text-brand hover:text-brand transition">About</Link>
+                            <Link to="/contact" className="text-sm font-medium text-gray-400 hover:text-brand transition">Contact</Link>
+                            <Link to="/register" className="px-5 py-2.5 bg-brand text-black rounded-full text-sm font-bold hover:shadow-[0_0_20px_rgba(255,204,0,0.4)] transition-all">
+                                Register Now
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -24,7 +32,7 @@ const AboutPage = () => {
 
             {/* Content */}
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <h1 className="text-4xl font-bold text-white mb-8">About DriverConnect</h1>
+                <h1 className="text-4xl font-bold text-white mb-8 mt-7">About DriverConnect</h1>
 
                 <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>

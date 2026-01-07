@@ -6,6 +6,8 @@ import { logout } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { SUCCESS_MESSAGES } from '../../common/successMessages';
 import { ERROR_MESSAGES } from '../../common/errorMessages';
+import {FaKey } from 'react-icons/fa';
+
 
 export const ResetPasswordForm = ({ onClose }: { onClose?: () => void }) => {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -47,7 +49,19 @@ export const ResetPasswordForm = ({ onClose }: { onClose?: () => void }) => {
 
     return (
         <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Reset Password</h2>
+            {/* Header Container with Flexbox */}
+<div className="flex items-center gap-4 mb-6">
+  {/* Icon Container */}
+  <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center text-brand flex-shrink-0">
+    <FaKey size={20} />
+  </div>
+  
+  {/* Heading - removed mb-6 because the parent handles spacing */}
+  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+    Reset Password
+  </h2>
+</div>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Password</label>

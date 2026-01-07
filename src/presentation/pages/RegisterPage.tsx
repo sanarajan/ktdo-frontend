@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AuthRepository } from '../../data/repositories/AuthRepository';
 import { LocationRepository } from '../../data/repositories/LocationRepository';
 import { Button } from '../components/Button';
@@ -9,31 +10,44 @@ import { ApprovalStatus, UserRole } from '../../common/enums';
 import { ImageValidator } from '../../utils/ImageValidator';
 import { SUCCESS_MESSAGES } from '../../common/successMessages';
 import { ERROR_MESSAGES } from '../../common/errorMessages';
+import { FaUser, FaMapMarkerAlt, FaCamera, FaIdCardAlt, FaArrowLeft } from 'react-icons/fa';
 
-const RegisterPage = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        bloodGroup: '',
-        state: '',
-        district: '',
-        houseName: '',
-        place: '',
-        pin: '',
-        stateCode: '',
-        rtoCode: '',
-        stateRtoCode: ''
+interface RegisterFormData {
+    name: string;
+    email: string;
+    phone: string;
+    bloodGroup: string;
+    state: string;
+    district: string;
+    houseName: string;
+    place: string;
+    pin: string;
+    stateCode: string;
+    rtoCode: string;
+    stateRtoCode: string;
+}
+
+interface StateCodeMapping {
+    state: string;
+    code: string;
+}
+
+const RegisterPage: React.FC = () => {
+    const [formData, setFormData] = useState<RegisterFormData>({
+        name: '', email: '', phone: '', bloodGroup: '', state: '',
+        district: '', houseName: '', place: '', pin: '',
+        stateCode: '', rtoCode: '', stateRtoCode: ''
     });
+
     const [photo, setPhoto] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string>('');
     const [photoError, setPhotoError] = useState<string>('');
     const [photoInfo, setPhotoInfo] = useState<string>('');
     const [states, setStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
-    const [stateCodes, setStateCodes] = useState<{ state: string; code: string }[]>([]);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [isLoading, setIsLoading] = useState(false);
+    const [stateCodes, setStateCodes] = useState<StateCodeMapping[]>([]);
+    const [errors, setErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -41,565 +55,248 @@ const RegisterPage = () => {
             try {
                 const data = await LocationRepository.getStates();
                 setStates(data);
-                try {
-                    const codes = await LocationRepository.getStateCodes();
-                    setStateCodes(codes);
-                } catch (err) {
-                    console.error('Failed to fetch state codes', err);
-                }
-            } catch (error) {
-                console.error('Failed to fetch states', error);
-            }
+                const codes = await LocationRepository.getStateCodes();
+                setStateCodes(codes);
+            } catch (err) { console.error(err); }
         };
         fetchStates();
     }, []);
 
+    // Standardized logic for "This field is required" message
+    const getFieldError = (name: keyof RegisterFormData, value: string): string => {
+        const trimmed = value.trim();
+        if (!trimmed) return 'this field is required';
+        
+        // Secondary validations
+        if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'invalid email format';
+        if (name === 'phone' && !/^\d{10}$/.test(trimmed)) return 'must be 10 digits';
+        if (name === 'pin' && !/^\d{6}$/.test(trimmed)) return 'invalid pin code';
+        
+        return '';
+    };
+
+    const validateField = (name: keyof RegisterFormData, value: string) => {
+        setErrors(prev => ({ ...prev, [name]: getFieldError(name, value) }));
+    };
+
     const handleStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const state = e.target.value;
-        // Auto-select state code if available
         let selectedStateCode = '';
         if (state) {
             const mapping = stateCodes.find(s => s.state === state);
-            if (mapping) {
-                selectedStateCode = mapping.code;
-            }
+            if (mapping) selectedStateCode = mapping.code;
         }
         setFormData(prev => ({ ...prev, state, district: '', stateCode: selectedStateCode, rtoCode: '', stateRtoCode: '' }));
+        validateField('state', state);
         
-        if (errors.state) setErrors(prev => ({ ...prev, state: '' }));
-
         if (state) {
             try {
                 const data = await LocationRepository.getDistricts(state);
                 setDistricts(data);
-            } catch (error) {
-                console.error('Failed to fetch districts', error);
-            }
-        } else {
-            setDistricts([]);
-        }
+            } catch (error) { console.error(error); }
+        } else { setDistricts([]); }
     };
 
     const handleRtoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rtoCode = e.target.value.replace(/\D/g, '').slice(0, 2); // Only allow numeric input
+        const rtoCode = e.target.value.replace(/\D/g, '').slice(0, 2);
         const newStateRtoCode = formData.stateCode && rtoCode ? `${formData.stateCode}-${rtoCode}` : '';
         setFormData(prev => ({ ...prev, rtoCode, stateRtoCode: newStateRtoCode }));
-        if (errors.rtoCode) setErrors(prev => ({ ...prev, rtoCode: '' }));
+        validateField('rtoCode', rtoCode);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-
-        if (name === 'phone') {
-            // Allow only digits and max 10 characters
-            const phoneValue = value.replace(/\D/g, '').slice(0, 10);
-            setFormData({ ...formData, [name]: phoneValue });
-        } else if (name === 'pin') {
-            // Pin code: digits only, max 6
-            const pinValue = value.replace(/\D/g, '').slice(0, 6);
-            setFormData({ ...formData, [name]: pinValue });
-        } else if (name === 'name') {
-            // Name: letters, spaces, select punctuation, max 50
-            const cleanedName = value.replace(/[^a-zA-Z\s'.-]/g, '').slice(0, 50);
-            setFormData({ ...formData, [name]: cleanedName });
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
-
-        // Clear error when user types
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
-    };
-
-    const validateField = (name: string, value: string) => {
-        const trimmed = value.trim();
-        const nameRegex = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\d{10}$/;
-        const pinRegex = /^\d{6}$/;
-        const rtoRegex = /^\d{1,2}$/;
-
-        let message = '';
-        switch (name) {
-            case 'name':
-                if (!trimmed) message = 'Name is required';
-                else if (!nameRegex.test(trimmed)) message = 'Name must contain only letters and spaces (2-50 chars)';
-                break;
-            case 'email':
-                if (!trimmed) message = 'Email is required';
-                else if (!emailRegex.test(trimmed)) message = 'Invalid email format';
-                break;
-            case 'phone':
-                if (!trimmed) message = 'Phone number is required';
-                else if (!phoneRegex.test(trimmed)) message = 'Phone number must be exactly 10 digits';
-                break;
-            case 'bloodGroup':
-                if (!trimmed) message = 'Blood group is required';
-                break;
-            case 'state':
-                if (!trimmed) message = 'State is required';
-                break;
-            case 'district':
-                if (!trimmed) message = 'District is required';
-                break;
-            case 'houseName':
-                if (!trimmed) message = 'House name is required';
-                break;
-            case 'place':
-                if (!trimmed) message = 'Place is required';
-                break;
-            case 'pin':
-                if (!trimmed) message = 'Pin code is required';
-                else if (!pinRegex.test(trimmed)) message = 'Pin code must be exactly 6 digits';
-                break;
-            case 'rtoCode':
-                if (!trimmed) message = 'RTO code is required';
-                else if (!rtoRegex.test(trimmed)) message = 'RTO code must be numeric (1-2 digits)';
-                break;
-            default:
-                break;
-        }
-
-        if (message) {
-            setErrors(prev => ({ ...prev, [name]: message }));
-        } else if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
+        let processedValue = value;
+        if (name === 'phone') processedValue = value.replace(/\D/g, '').slice(0, 10);
+        else if (name === 'pin') processedValue = value.replace(/\D/g, '').slice(0, 6);
+        setFormData(prev => ({ ...prev, [name]: processedValue }));
+        if (errors[name as keyof RegisterFormData]) validateField(name as keyof RegisterFormData, processedValue);
     };
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        setPhotoError('');
-        setPhotoInfo('');
-        setPhotoPreview('');
-
-        if (!file) {
-            setPhoto(null);
-            return;
-        }
-
-        try {
-            // Validate image
-            const validation = await ImageValidator.validateImage(file);
-            if (!validation.valid) {
-                setPhotoError(validation.error || 'Image validation failed');
-                setPhoto(null);
-                e.target.value = ''; // Reset input
-                return;
-            }
-
-            // Show success info
-            const sizeKB = ImageValidator.getFileSizeKB(file);
-            setPhotoInfo(`✓ Image valid (${sizeKB} KB)`);
-            setPhoto(file);
-
-            // Create preview
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setPhotoPreview(event.target?.result as string);
-            };
-            reader.readAsDataURL(file);
-        } catch (error: any) {
-            setPhotoError(error.message || 'Failed to validate image');
-            setPhoto(null);
-            e.target.value = ''; // Reset input
-        }
+        setPhotoError(''); setPhotoPreview('');
+        if (!file) { setPhoto(null); setPhotoError('this field is required'); return; }
+        const validation = await ImageValidator.validateImage(file);
+        if (!validation.valid) { setPhotoError(validation.error || 'invalid image'); return; }
+        setPhoto(file);
+        const reader = new FileReader();
+        reader.onload = (event) => setPhotoPreview(event.target?.result as string);
+        reader.readAsDataURL(file);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const newErrors: Partial<Record<keyof RegisterFormData, string>> = {};
+        let hasErrors = false;
 
-        // Validate photo is selected
-        if (!photo) {
-            toast.error(ERROR_MESSAGES.INVALID_PHOTO);
-            return;
-        }
+        (Object.keys(formData) as Array<keyof RegisterFormData>).forEach(key => {
+            if (key !== 'stateRtoCode' && key !== 'stateCode') {
+                const error = getFieldError(key, formData[key]);
+                if (error) { newErrors[key] = error; hasErrors = true; }
+            }
+        });
 
-        // Validation Logic
-        const newErrors: { [key: string]: string } = {};
+        if (!photo) { setPhotoError('this field is required'); hasErrors = true; }
+        setErrors(newErrors);
 
-        const nameRegex = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/; // letters and spaces, min 2 chars
-        if (!formData.name.trim()) {
-            newErrors.name = 'Name is required';
-        } else if (!nameRegex.test(formData.name.trim())) {
-            newErrors.name = 'Name must contain only letters and spaces (2-50 chars)';
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
-        } else if (!emailRegex.test(formData.email)) {
-            newErrors.email = 'Invalid email format';
-        }
-
-        const phoneRegex = /^\d{10}$/;
-        if (!formData.phone) {
-            newErrors.phone = 'Phone number is required';
-        } else if (!phoneRegex.test(formData.phone)) {
-            newErrors.phone = 'Phone number must be exactly 10 digits';
-        }
-
-        const pinRegex = /^\d{6}$/;
-
-        if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
-        if (!formData.state) newErrors.state = 'State is required';
-        if (!formData.district) newErrors.district = 'District is required';
-        if (!formData.houseName.trim()) newErrors.houseName = 'House name is required';
-        if (!formData.place.trim()) newErrors.place = 'Place is required';
-        if (!formData.pin.trim()) {
-            newErrors.pin = 'Pin code is required';
-        } else if (!pinRegex.test(formData.pin)) {
-            newErrors.pin = ERROR_MESSAGES.PIN_CODE_INVALID;
-        }
-        if (!formData.rtoCode.trim()) {
-            newErrors.rtoCode = ERROR_MESSAGES.RTO_CODE_REQUIRED;
-        } else if (!/^\d{1,2}$/.test(formData.rtoCode)) {
-            newErrors.rtoCode = ERROR_MESSAGES.RTO_CODE_INVALID;
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error(ERROR_MESSAGES.FORM_ERRORS);
+        if (hasErrors) {
+            toast.error("Please fill all required fields");
             return;
         }
 
         setIsLoading(true);
         try {
             const data = new FormData();
-            Object.entries(formData).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    data.append(key, String(value));
-                }
-            });
+            Object.entries(formData).forEach(([k, v]) => data.append(k, v));
             data.append('role', UserRole.MEMBER);
             data.append('status', ApprovalStatus.PENDING);
-            data.append('photo', photo);
-
+            data.append('photo', photo!);
             await AuthRepository.registerDriver(data);
             toast.success(SUCCESS_MESSAGES.REGISTRATION_SUCCESS);
-            setTimeout(() => {
-                navigate('/');
-            }, 2000);
+            setTimeout(() => navigate('/'), 2000);
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || ERROR_MESSAGES.REGISTRATION_FAILED;
-            
-            // Check if it's a phone or email already exists error
-            if (errorMessage.toLowerCase().includes('phone')) {
-                setErrors(prev => ({ ...prev, phone: errorMessage }));
-                toast.error(errorMessage);
-            } else if (errorMessage.toLowerCase().includes('email')) {
-                setErrors(prev => ({ ...prev, email: errorMessage }));
-                toast.error(errorMessage);
-            } else {
-                toast.error(errorMessage);
-            }
-        } finally {
-            setIsLoading(false);
-        }
+            toast.error(error.response?.data?.message || ERROR_MESSAGES.REGISTRATION_FAILED);
+        } finally { setIsLoading(false); }
     };
 
+    // Reusable Error Text component for consistency
+    const FieldError = ({ msg }: { msg?: string }) => (
+        msg ? <p className="text-red-400 text-[10px] font-medium mt-1 ml-1">{msg}</p> : null
+    );
+
     return (
-        <div className="min-h-screen bg-brand">
-            {/* Navigation */}
-            <nav className="bg-black border-b border-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-2">
-                            <img src="/logo.png" alt="KTDO Logo" className="w-8 h-8 object-contain" />
-                            <h1 className="text-xl font-bold text-white">KTDO</h1>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <Link to="/" className="text-gray-300 hover:text-white transition">Home</Link>
-                            <Link to="/about" className="text-gray-300 hover:text-white transition">About</Link>
-                            <Link to="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
-                            <Link to="/register" className="text-brand hover:text-brand-400 transition font-medium">Register</Link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+        <div className="min-h-screen bg-[#080808] text-white selection:bg-brand">
+           {/* Navigation - Ultra Modern Glass Style (Synced with Home) */}
+<nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+    <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+            {/* Logo Section */}
+            <div className="flex items-center gap-3">
+                <motion.img 
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                    src="/logo.png" 
+                    alt="KTDO Logo" 
+                    className="w-10 h-10 object-contain" 
+                />
+                <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-brand to-yellow-500 bg-clip-text text-transparent">
+                    KTDO
+                </h1>
+            </div>
 
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="bg-black dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-800">
-                    {/* Header */}
-                    <div className="bg-brand px-8 py-6">
-                        <div className="flex flex-col items-center">
-                            <h2 className="text-3xl font-bold text-black">Driver Registration</h2>
-                            <p className="text-gray-800 mt-2">Join our professional driver community</p>
-                        </div>
+            {/* Back to Home Link - Styled like the Home nav items */}
+            <div className="flex items-center gap-8">
+                <Link to="/" className="group flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-brand transition">
+                    <FaArrowLeft className="group-hover:-translate-x-1 transition-transform text-brand" />
+                    Back to Home
+                </Link>
+            </div>
+        </div>
+    </div>
+</nav>
+
+            <div className="pt-32 pb-20 px-4">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">Driver <span className="text-brand">Registration</span></h2>
+                        <p className="text-gray-400 font-medium">Professional Driver Enrollment Form</p>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                        {/* Photo Upload */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Passport Size Photo <span className="text-red-500">*</span>
-                            </label>
-                            <p className="text-xs text-gray-400 mb-2">
-                                Formats: JPG, JPEG, PNG | Size: 30 KB - 300 KB | Portrait orientation required
-                            </p>
-                            <div className="flex gap-4 items-start">
-                                <div className="flex-1">
-                                    <input
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                                        onChange={handlePhotoChange}
-                                        className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand file:text-black hover:file:bg-brand-400"
-                                    />
-                                    {photoError && (
-                                        <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                            <span>✗</span> {photoError}
-                                        </p>
-                                    )}
-                                    {photoInfo && (
-                                        <p className="text-green-500 text-sm mt-2">
-                                            {photoInfo}
-                                        </p>
-                                    )}
+                    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
+                            <div className="flex items-center gap-3 mb-6">
+                                <FaCamera className="text-brand text-xl" />
+                                <h3 className="text-xl font-bold">Profile Identity</h3>
+                            </div>
+                            <div className="flex flex-col md:flex-row gap-8 items-center">
+                                <div className={`w-40 h-52 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden transition-all 
+                                    ${photoPreview ? 'border-brand' : 'border-gray-700'}`}>
+                                    {photoPreview ? <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" /> : <FaUser className="text-4xl text-gray-700" />}
                                 </div>
-                                {photoPreview && (
-                                    <div className="w-32 h-40 flex-shrink-0 rounded-lg overflow-hidden border-2 border-brand shadow-lg">
-                                        <img
-                                            src={photoPreview}
-                                            alt="Preview"
-                                            className="w-full h-full object-cover"
-                                        />
+                                <div className="flex-1 space-y-4">
+                                    <label className="block text-sm font-bold text-gray-300">Passport Photo <span className="text-brand">*</span></label>
+                                    <input type="file" accept=".jpg,.jpeg,.png" onChange={handlePhotoChange} className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-6 file:rounded-full file:bg-brand file:text-black file:font-bold cursor-pointer" />
+                                    <FieldError msg={photoError} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
+                            <div className="flex items-center gap-3 mb-8">
+                                <FaIdCardAlt className="text-brand text-xl" />
+                                <h3 className="text-xl font-bold">Personal Information</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} onBlur={() => validateField('name', formData.name)} error={errors.name} />
+                                <Input label="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} onBlur={() => validateField('email', formData.email)} error={errors.email} />
+                                
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-bold text-gray-400">Phone Number</label>
+                                    <div className="flex gap-2">
+                                        <span className="px-4 py-3 bg-white/10 rounded-xl border border-white/10 text-brand font-bold">+91</span>
+                                        <input name="phone" value={formData.phone} onChange={handleChange} onBlur={() => validateField('phone', formData.phone)} maxLength={10} className={`flex-1 px-4 py-3 rounded-xl bg-white/5 border ${errors.phone ? 'border-red-500' : 'border-white/10'} focus:ring-2 focus:ring-brand outline-none`} />
                                     </div>
-                                )}
+                                    <FieldError msg={errors.phone} />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-bold text-gray-400">Blood Group</label>
+                                    <select name="bloodGroup" value={formData.bloodGroup} onBlur={() => validateField('bloodGroup', formData.bloodGroup)} onChange={(e) => {setFormData(p => ({...p, bloodGroup: e.target.value})); validateField('bloodGroup', e.target.value);}} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.bloodGroup ? 'border-red-500' : 'border-white/10'} focus:ring-2 focus:ring-brand outline-none text-white`}>
+                                        <option value="" className="bg-black">Select Group</option>
+                                        {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(g => <option key={g} value={g} className="bg-black">{g}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.bloodGroup} />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Name and Email */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input
-                                label="Full Name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                onBlur={(e) => validateField('name', e.target.value)}
-                                maxLength={50}
-                                required
-                                error={errors.name}
-                            />
-                            <Input
-                                label="Email"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                onBlur={(e) => validateField('email', e.target.value)}
-                                required
-                                error={errors.email}
-                            />
-                        </div>
-
-                        {/* Phone */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-300">Phone Number</label>
-                            <div className="flex gap-2">
-                                <input
-                                    readOnly
-                                    value="+91"
-                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 w-20"
-                                />
-                                <input
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    onBlur={(e) => validateField('phone', e.target.value)}
-                                    required
-                                    type="tel"
-                                    inputMode="numeric"
-                                    maxLength={10}
-                                    className={`flex-1 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white text-gray-900 placeholder-gray-400 ${
-                                        errors.phone 
-                                            ? 'border-red-500 focus:ring-red-500' 
-                                            : 'border-gray-300'
-                                    }`}
-                                />
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
+                            <div className="flex items-center gap-3 mb-8">
+                                <FaMapMarkerAlt className="text-brand text-xl" />
+                                <h3 className="text-xl font-bold">Location & RTO</h3>
                             </div>
-                            {errors.phone && <span className="text-xs text-red-500 ml-1">{errors.phone}</span>}
-                        </div>
-
-                        {/* Blood Group */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-300">Blood Group</label>
-                            <select
-                                name="bloodGroup"
-                                className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white text-gray-900 ${
-                                    errors.bloodGroup 
-                                        ? 'border-red-500 focus:ring-red-500' 
-                                        : 'border-gray-300'
-                                }`}
-                                value={formData.bloodGroup}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, bloodGroup: e.target.value });
-                                    if (errors.bloodGroup) setErrors(prev => ({ ...prev, bloodGroup: '' }));
-                                }}
-                                onBlur={(e) => validateField('bloodGroup', e.target.value)}
-                                required
-                            >
-                                <option value="">Select Blood Group</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                            </select>
-                            {errors.bloodGroup && <span className="text-xs text-red-500 ml-1">{errors.bloodGroup}</span>}
-                        </div>
-
-                        {/* State and District */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-300">State</label>
-                                <select
-                                    name="state"
-                                    className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white text-gray-900 ${
-                                        errors.state 
-                                            ? 'border-red-500 focus:ring-red-500' 
-                                            : 'border-gray-300'
-                                    }`}
-                                    value={formData.state}
-                                    onChange={handleStateChange}
-                                    onBlur={(e) => validateField('state', e.target.value)}
-                                    required
-                                >
-                                    <option value="">Select State</option>
-                                    {states.map(state => (
-                                        <option key={state} value={state}>{state}</option>
-                                    ))}
-                                </select>
-                                {errors.state && <span className="text-xs text-red-500 ml-1">{errors.state}</span>}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div className="flex flex-col gap-2">
+                                    <select name="state" value={formData.state} onBlur={() => validateField('state', formData.state)} onChange={handleStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.state ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
+                                        <option value="" className="bg-black">Select State</option>
+                                        {states.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.state} />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <select name="district" value={formData.district} disabled={!formData.state} onBlur={() => validateField('district', formData.district)} onChange={(e) => {setFormData(p => ({...p, district: e.target.value})); validateField('district', e.target.value);}} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.district ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
+                                        <option value="" className="bg-black">Select District</option>
+                                        {districts.map(d => <option key={d} value={d} className="bg-black">{d}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.district} />
+                                </div>
                             </div>
 
-                            <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-300">District</label>
-                                <select
-                                    name="district"
-                                    className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white text-gray-900 ${
-                                        errors.district 
-                                            ? 'border-red-500 focus:ring-red-500' 
-                                            : 'border-gray-300'
-                                    }`}
-                                    value={formData.district}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, district: e.target.value });
-                                        if (errors.district) setErrors(prev => ({ ...prev, district: '' }));
-                                    }}
-                                    onBlur={(e) => validateField('district', e.target.value)}
-                                    required
-                                    disabled={!formData.state}
-                                >
-                                    <option value="">Select District</option>
-                                    {districts.map(district => (
-                                        <option key={district} value={district}>{district}</option>
-                                    ))}
-                                </select>
-                                {errors.district && <span className="text-xs text-red-500 ml-1">{errors.district}</span>}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-brand/5 rounded-2xl border border-brand/20">
+                                <div><label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">State Code</label><input readOnly value={formData.stateCode} className="bg-transparent border-none text-brand font-bold" /></div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">RTO Code *</label>
+                                    <input type="text" placeholder="e.g. 01" value={formData.rtoCode} onChange={handleRtoCodeChange} onBlur={() => validateField('rtoCode', formData.rtoCode)} maxLength={2} className={`bg-white/10 rounded px-2 py-1 w-full outline-none focus:ring-1 ${errors.rtoCode ? 'ring-1 ring-red-500' : 'focus:ring-brand'}`} />
+                                    <FieldError msg={errors.rtoCode} />
+                                </div>
+                                <div><label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">Reg. Code</label><input readOnly value={formData.stateRtoCode} className="bg-transparent border-none text-white font-bold" /></div>
                             </div>
                         </div>
 
-                        {/* RTO Code Fields */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-300">State Code</label>
-                                <input
-                                    type="text"
-                                    className="px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 cursor-not-allowed"
-                                    value={formData.stateCode}
-                                    readOnly
-                                    placeholder="Auto-selected"
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-300">
-                                    RTO Code <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.rtoCode}
-                                    onChange={handleRtoCodeChange}
-                                    onBlur={(e) => validateField('rtoCode', e.target.value)}
-                                    placeholder="01, 02, etc."
-                                    required
-                                    maxLength={2}
-                                    inputMode="numeric"
-                                    className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white text-gray-900 placeholder-gray-400 ${
-                                        errors.rtoCode 
-                                            ? 'border-red-500 focus:ring-red-500' 
-                                            : 'border-gray-300'
-                                    }`}
-                                />
-                                {errors.rtoCode && <span className="text-xs text-red-500 ml-1">{errors.rtoCode}</span>}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-300">State RTO Code</label>
-                                <input
-                                    type="text"
-                                    value={formData.stateRtoCode}
-                                    readOnly
-                                    placeholder="KL-01"
-                                    className="px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 cursor-not-allowed"
-                                />
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md space-y-6">
+                            <Input label="House Name" name="houseName" value={formData.houseName} onChange={handleChange} onBlur={() => validateField('houseName', formData.houseName)} error={errors.houseName} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input label="Place" name="place" value={formData.place} onChange={handleChange} onBlur={() => validateField('place', formData.place)} error={errors.place} />
+                                <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} onBlur={() => validateField('pin', formData.pin)} maxLength={6} error={errors.pin} />
                             </div>
                         </div>
 
-                        {/* Address Fields */}
-                        <Input
-                            label="House Name / No"
-                            name="houseName"
-                            value={formData.houseName}
-                            onChange={handleChange}
-                            onBlur={(e) => validateField('houseName', e.target.value)}
-                            required
-                            error={errors.houseName}
-                        />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input
-                                label="Place"
-                                name="place"
-                                value={formData.place}
-                                onChange={handleChange}
-                                onBlur={(e) => validateField('place', e.target.value)}
-                                required
-                                error={errors.place}
-                            />
-                            <Input
-                                label="Pin Code"
-                                name="pin"
-                                value={formData.pin}
-                                onChange={handleChange}
-                                onBlur={(e) => validateField('pin', e.target.value)}
-                                inputMode="numeric"
-                                maxLength={6}
-                                required
-                                error={errors.pin}
-                            />
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="pt-4">
-                            <Button type="submit" isLoading={isLoading} className="w-full bg-brand text-black hover:bg-brand-400">
-                                Register Now
-                            </Button>
-                        </div>
-
-                        {/* Login Link */}
-                        {/* <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-                            Already have an account?{' '}
-                            <Link to="/login" className="text-brand dark:text-brand-400 hover:text-brand-500 font-medium">
-                                Sign In
-                            </Link>
-                        </p> */}
+                        <Button type="submit" isLoading={isLoading} className="w-full py-4 rounded-2xl bg-brand text-black font-black text-xl hover:shadow-[0_0_30px_rgba(255,204,0,0.4)] transition-all uppercase">
+                            Complete Registration
+                        </Button>
                     </form>
-                </div>
+                </motion.div>
             </div>
         </div>
     );

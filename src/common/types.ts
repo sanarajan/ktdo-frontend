@@ -27,6 +27,8 @@ export interface Driver extends User {
     status: ApprovalStatus;
     uniqueId?: string;
     photoUrl?: string;
+    printCount?: number;
+    createdBy?: string;
 }
 
 export interface ApiResponse<T = any> {

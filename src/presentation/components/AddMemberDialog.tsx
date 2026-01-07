@@ -10,6 +10,7 @@ import type { RootState } from '../../store';
 import { ImageValidator } from '../../utils/ImageValidator';
 import { SUCCESS_MESSAGES } from '../../common/successMessages';
 import { ERROR_MESSAGES } from '../../common/errorMessages';
+import { FaUserPlus, FaTimes, FaCamera, FaTint, FaMapMarkerAlt, FaIdCard } from 'react-icons/fa';
 
 interface AddMemberDialogProps {
     isOpen: boolean;
@@ -47,7 +48,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     useEffect(() => {
         if (isOpen) {
             if (user?.role === UserRole.DISTRICT_ADMIN) {
-                // Pre-fill and lock for District Admin
                 const userState = (user as any).state || '';
                 setFormData(prev => ({
                     ...prev,
@@ -55,7 +55,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                     district: (user as any).district || ''
                 }));
 
-                // Fetch districts for this state so the dropdown shows the value correctly
                 if (userState) {
                     const fetchDistricts = async () => {
                         try {
@@ -77,7 +76,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                         const codes = await LocationRepository.getStateCodes();
                         setStateCodes(codes);
                         
-                        // Auto-select state code for district admin after codes are loaded
                         if (user?.role === UserRole.DISTRICT_ADMIN) {
                             const userState = (user as any).state || '';
                             if (userState) {
@@ -124,7 +122,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     };
 
     const handleRtoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rtoCode = e.target.value.replace(/\D/g, '').slice(0, 2); // Only allow numeric input
+        const rtoCode = e.target.value.replace(/\D/g, '').slice(0, 2); 
         const newStateRtoCode = formData.stateCode && rtoCode ? `${formData.stateCode}-${rtoCode}` : '';
         setFormData(prev => ({ ...prev, rtoCode, stateRtoCode: newStateRtoCode }));
         if (errors.rtoCode) setErrors(prev => ({ ...prev, rtoCode: '' }));
@@ -214,21 +212,18 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         }
 
         try {
-            // Validate image
             const validation = await ImageValidator.validateImage(file);
             if (!validation.valid) {
                 setPhotoError(validation.error || 'Image validation failed');
                 setPhoto(null);
-                e.target.value = ''; // Reset input
+                e.target.value = '';
                 return;
             }
 
-            // Show success info
             const sizeKB = ImageValidator.getFileSizeKB(file);
             setPhotoInfo(`✓ Image valid (${sizeKB} KB)`);
             setPhoto(file);
 
-            // Create preview
             const reader = new FileReader();
             reader.onload = (event) => {
                 setPhotoPreview(event.target?.result as string);
@@ -237,11 +232,9 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         } catch (error: any) {
             setPhotoError(error.message || 'Failed to validate image');
             setPhoto(null);
-            e.target.value = ''; // Reset input
+            e.target.value = '';
         }
     };
-
-    if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -252,7 +245,11 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         const phoneRegex = /^\d{10}$/;
         const pinRegex = /^\d{6}$/;
         const rtoRegex = /^\d{1,2}$/;
-
+if (!photo) {
+        setPhotoError('Profile photo is required');
+        toast.error('Please upload a profile photo');
+        return; // Stop the submission
+    }
         if (!formData.name.trim()) newErrors.name = 'Name is required';
         else if (!nameRegex.test(formData.name.trim())) newErrors.name = 'Name must contain only letters and spaces (2-50 chars)';
 
@@ -297,7 +294,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
 
             toast.success(SUCCESS_MESSAGES.MEMBER_ADDED);
             
-            // Clear form after successful submission
             setFormData({
                 name: '',
                 email: '',
@@ -322,8 +318,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
             onClose();
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || ERROR_MESSAGES.MEMBER_ADD_FAILED;
-            
-            // Check if it's a phone or email already exists error
             if (errorMessage.toLowerCase().includes('phone')) {
                 setErrors(prev => ({ ...prev, phone: errorMessage }));
                 toast.error(errorMessage);
@@ -338,247 +332,164 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         }
     };
 
+    if (!isOpen) return null;
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                <h2 className="text-xl font-bold mb-4 dark:text-white">Add New Member</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Photo
-                        </label>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                            Formats: JPG, JPEG, PNG | Size: 30 KB - 300 KB | Portrait orientation required
-                        </p>
-                        <div className="flex gap-3 items-start">
-                            <div className="flex-1">
-                                <input
-                                    type="file"
-                                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                                    onChange={handlePhotoChange}
-                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 dark:file:bg-gray-700 dark:file:text-gray-300"
-                                />
-                                {photoError && (
-                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                        <span>✗</span> {photoError}
-                                    </p>
-                                )}
-                                {photoInfo && (
-                                    <p className="text-green-500 text-sm mt-2">
-                                        {photoInfo}
-                                    </p>
-                                )}
-                            </div>
-                            {photoPreview && (
-                                <div className="w-24 h-32 flex-shrink-0 rounded-lg overflow-hidden border-2 border-brand shadow-md">
-                                    <img
-                                        src={photoPreview}
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-white/20">
+                
+                {/* Header Styling */}
+                <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center text-brand">
+                            <FaUserPlus size={20} />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Register New Member</h2>
+                            <p className="text-xs text-gray-500">Provide accurate details for membership registration</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50">
+                        <FaTimes size={18} />
+                    </button>
+                </div>
+
+                {/* Main Form Content */}
+                <form id="add-member-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 space-y-8 bg-gray-50/30 dark:bg-gray-900">
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        
+                        {/* Sidebar: Photo & Vital Info */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 text-center">Profile Photo</label>
+                                <div className="flex flex-col items-center">
+                                    <label className="relative cursor-pointer group">
+                                        <div className="w-40 h-52 rounded-xl bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 overflow-hidden flex items-center justify-center transition-all group-hover:border-brand">
+                                            {photoPreview ? (
+                                                <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="text-center px-4">
+                                                    <FaCamera className="mx-auto text-gray-300 mb-2 text-2xl" />
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">Upload Portrait<br/>(30KB-300KB)</span>
+                                                </div>
+                                                
+                                            )}
+                                        </div>
+                                        <input type="file" accept=".jpg,.jpeg,.png" onChange={handlePhotoChange} className="hidden" />
+                                        <div className="absolute -bottom-2 inset-x-0 flex justify-center">
+                                            <span className="bg-brand text-white text-[9px] px-3 py-1 rounded-full shadow-lg font-bold uppercase tracking-tighter">Click to browse</span>
+                                        </div>
+                                    </label>
+                                    {photoError && <p className="text-red-500 text-[10px] mt-4 font-bold bg-red-50 px-2 py-1 rounded">✗ {photoError}</p>}
+                                    {photoInfo && <p className="text-green-500 text-[10px] mt-4 font-bold bg-green-50 px-2 py-1 rounded">{photoInfo}</p>}
                                 </div>
-                            )}
-                        </div>
-                    </div>
 
-                    <Input
-                        label="Name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField('name', e.target.value)}
-                        maxLength={50}
-                        required
-                        error={errors.name}
-                    />
-                    <Input
-                        label="Email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField('email', e.target.value)}
-                        required
-                        error={errors.email}
-                    />
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
-                        <div className="flex gap-2">
-                            <input
-                                readOnly
-                                value="+91"
-                                className="px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white w-20"
-                            />
-                            <input
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                onBlur={(e) => validateField('phone', e.target.value)}
-                                required
-                                type="tel"
-                                inputMode="numeric"
-                                maxLength={10}
-                                className={`flex-1 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-800 dark:text-white ${
-                                    errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-700'
-                                }`}
-                            />
-                        </div>
-                        {errors.phone && <span className="text-xs text-red-500 ml-1">{errors.phone}</span>}
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Blood Group</label>
-                        <select
-                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                errors.bloodGroup ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            value={formData.bloodGroup}
-                            onChange={(e) => {
-                                setFormData({ ...formData, bloodGroup: e.target.value });
-                                if (errors.bloodGroup) setErrors(prev => ({ ...prev, bloodGroup: '' }));
-                            }}
-                            onBlur={(e) => validateField('bloodGroup', e.target.value)}
-                            required
-                        >
-                            <option value="">Select Blood Group</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
-                        </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">State</label>
-                            <select
-                                className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                    errors.state ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                                }`}
-                                value={formData.state}
-                                onChange={handleStateChange}
-                                onBlur={(e) => validateField('state', e.target.value)}
-                                required
-                                disabled
-                            >
-                                <option value="">Select State</option>
-                                {states.map(state => (
-                                    <option key={state} value={state}>{state}</option>
-                                ))}
-                            </select>
-                            {errors.state && <span className="text-xs text-red-500 ml-1">{errors.state}</span>}
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">District</label>
-                            <select
-                                className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                    errors.district ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                                }`}
-                                value={formData.district}
-                                onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                                onBlur={(e) => validateField('district', e.target.value)}
-                                required
-                                disabled
-                            >
-                                <option value="">Select District</option>
-                                {districts.map(district => (
-                                    <option key={district} value={district}>{district}</option>
-                                ))}
-                            </select>
-                            {errors.district && <span className="text-xs text-red-500 ml-1">{errors.district}</span>}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">State Code</label>
-                                <select
-                                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-                                    value={formData.stateCode}
-                                    onChange={handleStateCodeChange}
-                                    disabled
-                                >
-                                    <option value="">Select State Code</option>
-                                    {stateCodes.map(sc => (
-                                        <option key={sc.state} value={sc.code}>{sc.code}</option>
-                                    ))}
-                                </select>
+                                <div className="mt-8">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <FaTint className="text-red-500" /> Blood Group
+                                    </label>
+                                    <select
+                                        className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none ${
+                                            errors.bloodGroup ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                                        }`}
+                                        value={formData.bloodGroup}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, bloodGroup: e.target.value });
+                                            if (errors.bloodGroup) setErrors(prev => ({ ...prev, bloodGroup: '' }));
+                                        }}
+                                        onBlur={(e) => validateField('bloodGroup', e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select Group</option>
+                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g} value={g}>{g}</option>)}
+                                    </select>
+                                    {errors.bloodGroup && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.bloodGroup}</p>}
+                                </div>
                             </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">RTO Code <span className="text-red-500">*</span></label>
-                            <input
-                                type="text"
-                                value={formData.rtoCode}
-                                onChange={handleRtoCodeChange}
-                                onBlur={(e) => validateField('rtoCode', e.target.value)}
-                                placeholder="01, 02, etc."
-                                required
-                                maxLength={2}
-                                inputMode="numeric"
-                                className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-800 dark:text-white ${
-                                    errors.rtoCode ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-700'
-                                }`}
-                            />
-                            {errors.rtoCode && <span className="text-xs text-red-500 ml-1">{errors.rtoCode}</span>}
                         </div>
 
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">State RTO Code</label>
-                            <input
-                                type="text"
-                                value={formData.stateRtoCode}
-                                readOnly
-                                placeholder="KL-01, TN-01, etc."
-                                className="px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white cursor-not-allowed"
-                            />
+                        {/* Main Inputs: Form Details */}
+                        <div className="lg:col-span-8 space-y-8">
+                            
+                            {/* Personal Info Section */}
+                            <section>
+                                <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
+                                    <FaIdCard /> Identity Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} onBlur={(e) => validateField('name', e.target.value)} maxLength={50} required error={errors.name} />
+                                    <Input label="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} onBlur={(e) => validateField('email', e.target.value)} required error={errors.email} />
+                                    
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ml-1">Phone Number</label>
+                                        <div className={`flex rounded-xl overflow-hidden border transition-all ${errors.phone ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`}>
+                                            <span className="px-4 flex items-center bg-gray-50 dark:bg-gray-800 text-gray-500 text-sm font-bold border-r border-gray-200 dark:border-gray-700">+91</span>
+                                            <input name="phone" value={formData.phone} onChange={handleChange} onBlur={(e) => validateField('phone', e.target.value)} required maxLength={10} className="flex-1 px-4 py-2.5 bg-white dark:bg-gray-900 text-sm outline-none dark:text-white" />
+                                        </div>
+                                        {errors.phone && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.phone}</p>}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Address Section */}
+                            <section>
+                                <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
+                                    <FaMapMarkerAlt /> Address & Location
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">State</label>
+                                        <select disabled className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 text-gray-500 text-sm cursor-not-allowed" value={formData.state}>
+                                            <option value="">Select State</option>
+                                            {states.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">District</label>
+                                        <select disabled className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 text-gray-500 text-sm cursor-not-allowed" value={formData.district}>
+                                            <option value="">Select District</option>
+                                            {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                    </div>
+
+                                    {/* Codes Grid */}
+                                    <div className="md:col-span-2 grid grid-cols-3 gap-3">
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs font-bold text-gray-400">State Code</label>
+                                            <input readOnly value={formData.stateCode} className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:text-gray-500 text-sm text-center font-bold" />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs font-bold text-gray-700 dark:text-gray-300">RTO Code <span className="text-red-500">*</span></label>
+                                            <input value={formData.rtoCode} onChange={handleRtoCodeChange} onBlur={(e) => validateField('rtoCode', e.target.value)} placeholder="01" required maxLength={2} className={`px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-900 text-sm text-center font-bold outline-none focus:ring-2 focus:ring-brand dark:text-white ${errors.rtoCode ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs font-bold text-gray-400">State RTO Code</label>
+                                            <input readOnly value={formData.stateRtoCode} className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:text-gray-500 text-sm text-center font-bold" />
+                                        </div>
+                                        {errors.rtoCode && <p className="col-span-3 text-red-500 text-[10px] font-semibold">{errors.rtoCode}</p>}
+                                    </div>
+
+                                    <Input label="House Name / No" name="houseName" value={formData.houseName} onChange={handleChange} onBlur={(e) => validateField('houseName', e.target.value)} required error={errors.houseName} />
+                                    <Input label="Place" name="place" value={formData.place} onChange={handleChange} onBlur={(e) => validateField('place', e.target.value)} required error={errors.place} />
+                                    <div className="md:col-span-2">
+                                        <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} onBlur={(e) => validateField('pin', e.target.value)} maxLength={6} required error={errors.pin} />
+                                    </div>
+                                </div>
+                            </section>
                         </div>
-                    </div>
-
-                    <Input
-                        label="House Name / No"
-                        name="houseName"
-                        value={formData.houseName}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField('houseName', e.target.value)}
-                        required
-                        error={errors.houseName}
-                    />
-                    <Input
-                        label="Place"
-                        name="place"
-                        value={formData.place}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField('place', e.target.value)}
-                        required
-                        error={errors.place}
-                    />
-                    <Input
-                        label="Pin Code"
-                        name="pin"
-                        value={formData.pin}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField('pin', e.target.value)}
-                        inputMode="numeric"
-                        maxLength={6}
-                        required
-                        error={errors.pin}
-                    />
-
-                    <div className="flex justify-end space-x-2 mt-6">
-                        <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" isLoading={loading}>
-                            Add Member
-                        </Button>
                     </div>
                 </form>
+
+                {/* Footer Styling */}
+                <div className="px-8 py-5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-3">
+                    <button type="button" onClick={onClose} disabled={loading} className="px-6 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 dark:text-gray-400 transition-colors">
+                        Cancel
+                    </button>
+                    <Button type="submit" form="add-member-form" isLoading={loading} className="px-10 py-2.5 rounded-xl bg-brand hover:bg-brand-dark shadow-lg shadow-brand/20 text-sm font-bold tracking-wide">
+                        Register Member
+                    </Button>
+                </div>
             </div>
         </div>
     );
