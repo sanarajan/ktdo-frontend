@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane, FaBars, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion'; // Added for modern smooth animations
 
 import { toast } from 'react-toastify';
@@ -8,12 +8,15 @@ import { SUCCESS_MESSAGES } from '../../common/successMessages';
 // import { SuccessMessage } from '@driver-app/shared'; // Removed as per revert request
 
 const ContactPage = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         subject: '',
         message: ''
     });
+
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,7 +28,7 @@ const ContactPage = () => {
     return (
         <div className="min-h-screen bg-black">
             {/* Navigation */}
-                <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+            <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         <div className="flex items-center gap-3">
@@ -38,6 +41,8 @@ const ContactPage = () => {
                                 KTDO
                             </h1>
                         </div>
+                        
+                        {/* Desktop Menu */}
                         <div className="hidden md:flex items-center gap-8">
                             <Link to="/" className="text-sm font-medium text-gray-400 hover:text-brand transition">Home</Link>
                             <Link to="/about" className="text-sm font-medium text-gray-400 hover:text-brand transition">About</Link>
@@ -46,7 +51,58 @@ const ContactPage = () => {
                                 Register Now
                             </Link>
                         </div>
+
+                        {/* Mobile Burger Menu Button */}
+                        <button 
+                            onClick={toggleMenu}
+                            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-brand transition-all"
+                            aria-label="Toggle menu"
+                        >
+                            {isMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                        </button>
                     </div>
+
+                    {/* Mobile Menu - Animated Dropdown */}
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="md:hidden border-t border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden"
+                        >
+                            <div className="px-6 py-4 space-y-3">
+                                <Link 
+                                    to="/" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-brand hover:bg-white/5 transition-all"
+                                >
+                                    Home
+                                </Link>
+                                <Link 
+                                    to="/about" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-brand hover:bg-white/5 transition-all"
+                                >
+                                    About
+                                </Link>
+                                <Link 
+                                    to="/contact" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-brand bg-brand/10 border border-brand/20 hover:bg-brand/20 transition-all"
+                                >
+                                    Contact
+                                </Link>
+                                <Link 
+                                    to="/register"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 bg-brand text-black rounded-lg text-sm font-bold hover:shadow-[0_0_20px_rgba(255,204,0,0.4)] transition-all text-center"
+                                >
+                                    Register Now
+                                </Link>
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
             </nav>
 
