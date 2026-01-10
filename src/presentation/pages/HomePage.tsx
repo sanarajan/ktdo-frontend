@@ -52,7 +52,7 @@ const HomePage = () => {
                     <img 
                         src="/hero-driver.jpg" 
                         alt="Professional Driver Banner" 
-                        className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-1000"
+                        className="w-full h-full object-cover opacity-90 grayscale hover:grayscale-0 transition-all duration-1000"
                     />
                     {/* 2. Professional Gradient Overlay (The Secret Sauce) */}
                     <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#050505]/60 to-[#050505]"></div>
