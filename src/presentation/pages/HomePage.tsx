@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion'; // Added for modern smooth animations
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { FaUserPlus, FaSignInAlt, FaIdCard, FaShieldAlt, FaUsers, FaArrowRight, FaBars, FaTimes } from 'react-icons/fa';
 
@@ -7,11 +7,12 @@ const HomePage = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
     return (
         <div className="min-h-screen bg-[#050505] text-white selection:bg-brand selection:text-black">
             
             {/* Navigation - Ultra Modern Glass Style */}
-            <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+            <nav className="fixed top-0 w-full z-50 bg-black/60  backdrop-blur-xl border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         <div className="flex items-center gap-3">
@@ -35,70 +36,34 @@ const HomePage = () => {
                             </Link>
                         </div>
 
-                        {/* Mobile Burger Menu Button */}
-                        <button 
-                            onClick={toggleMenu}
-                            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-brand transition-all"
-                            aria-label="Toggle menu"
-                        >
-                            {isMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                        {/* Mobile Menu Button */}
+                        <button onClick={toggleMenu} className="md:hidden text-brand">
+                            {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
                         </button>
                     </div>
-
-                    {/* Mobile Menu - Animated Dropdown */}
-                    {isMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="md:hidden border-t border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden"
-                        >
-                            <div className="px-6 py-4 space-y-3">
-                                <Link 
-                                    to="/" 
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-brand bg-brand/10 border border-brand/20 hover:bg-brand/20 transition-all"
-                                >
-                                    Home
-                                </Link>
-                                <Link 
-                                    to="/about" 
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-brand hover:bg-white/5 transition-all"
-                                >
-                                    About
-                                </Link>
-                                <Link 
-                                    to="/contact" 
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-brand hover:bg-white/5 transition-all"
-                                >
-                                    Contact
-                                </Link>
-                                <Link 
-                                    to="/register"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="block px-4 py-3 bg-brand text-black rounded-lg text-sm font-bold hover:shadow-[0_0_20px_rgba(255,204,0,0.4)] transition-all text-center"
-                                >
-                                    Register Now
-                                </Link>
-                            </div>
-                        </motion.div>
-                    )}
                 </div>
             </nav>
 
-            {/* Hero Section - Visual Impact */}
-            <section className="relative pt-32 pb-20 overflow-hidden">
-                {/* Background Ambient Glow */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-10" />
+            {/* HERO SECTION WITH INDUSTRIAL BANNER */}
+            <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
                 
-                <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+                {/* 1. The Background Image Banner */}
+                <div className="absolute inset-0 z-0">
+                    <img 
+                        src="/hero-driver.jpg" 
+                        alt="Professional Driver Banner" 
+                        className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-1000"
+                    />
+                    {/* 2. Professional Gradient Overlay (The Secret Sauce) */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#050505]/60 to-[#050505]"></div>
+                </div>
+
+                {/* 3. Hero Content */}
+                <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.8 }}
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand/30 bg-brand/10 text-brand text-xs font-bold mb-8 tracking-widest uppercase">
                            <span className="relative flex h-2 w-2">
@@ -113,12 +78,12 @@ const HomePage = () => {
                             <span className="text-brand">Professional Driving.</span>
                         </h2>
                         
-                        <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
                             Empowering Kerala's taxi community with digital identity, verified security, and a robust professional network. 
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Link to="/register" className="group w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-brand text-black font-black rounded-2xl hover:scale-105 transition-all shadow-xl">
+                            <Link to="/register" className="group w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-brand text-black font-black rounded-2xl hover:scale-105 transition-all shadow-2xl">
                                 <FaUserPlus /> Join the Lobby
                                 <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                             </Link>
@@ -128,10 +93,13 @@ const HomePage = () => {
                         </div>
                     </motion.div>
                 </div>
+
+                {/* Ambient Glow for extra depth */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand/10 blur-[150px] rounded-full -z-5" />
             </section>
 
             {/* Bento Grid Features */}
-            <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+            <section className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20">
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
                         { icon: <FaIdCard />, title: "Digital ID Card", desc: "Automated identification generation with unique member protocols.", color: "from-brand/20" },
@@ -141,7 +109,7 @@ const HomePage = () => {
                         <motion.div 
                             key={idx}
                             whileHover={{ y: -10 }}
-                            className={`p-8 rounded-3xl bg-gradient-to-br ${feature.color} to-transparent border border-white/5 backdrop-blur-sm group hover:border-brand/40 transition-all shadow-2xl`}
+                            className={`p-8 rounded-3xl bg-gradient-to-br ${feature.color} to-[#050505]/50 border border-white/5 backdrop-blur-md group hover:border-brand/40 transition-all shadow-2xl`}
                         >
                             <div className="bg-brand text-black w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-2xl shadow-[0_0_15px_rgba(255,204,0,0.3)]">
                                 {feature.icon}
@@ -153,20 +121,14 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Footer - Minimalist */}
+            {/* Footer */}
             <footer className="py-12 border-t border-white/5 bg-black">
                 <div className="max-w-7xl mx-auto px-6 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8 opacity-50" />
-                        <p className="text-gray-500 text-xs tracking-[4px] uppercase font-bold">
-                            &copy; {new Date().getFullYear()} KTDO Ecosystem
-                        </p>
-                        <div className="flex gap-6 mt-4">
-                           <span className="h-[1px] w-12 bg-white/10 mt-2"></span>
-                           <p className="text-[10px] text-gray-600 font-mono italic">Built with MERN x Clean Architecture</p>
-                           <span className="h-[1px] w-12 bg-white/10 mt-2"></span>
-                        </div>
-                    </div>
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 opacity-50 mx-auto mb-4" />
+                    <p className="text-gray-500 text-xs tracking-[4px] uppercase font-bold">
+                        &copy; {new Date().getFullYear()} KTDO Ecosystem
+                    </p>
+                    <p className="text-[10px] text-gray-600 font-mono italic mt-4">Built with MERN x Clean Architecture</p>
                 </div>
             </footer>
         </div>
