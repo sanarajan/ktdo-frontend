@@ -24,6 +24,7 @@ export interface Driver extends User {
     district?: string;
     pin?: string;
     bloodGroup?: string;
+    licenceNumber?: string;
     status: ApprovalStatus;
     uniqueId?: string;
     photoUrl?: string;

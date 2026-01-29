@@ -105,13 +105,18 @@ const DistrictAdminDashboard = () => {
     };
 
     const handlePrintId = async (member: any) => {
+        if (!member.photoUrl || member.photoUrl === 'null' || member.photoUrl === 'undefined' || member.photoUrl === '') {
+            toast.error("Please add a profile image to your profile.");
+            return;
+        }
+
         try {
             // Prepare image URL
             let photoUrl = member.photoUrl;
             if (photoUrl && !photoUrl.startsWith('http') && !photoUrl.startsWith('data:')) {
-                 const serverUrl = API_BASE_URL.replace(/\/api\/?$/, '');
-                 const cleanUrl = photoUrl.startsWith('/') ? photoUrl.slice(1) : photoUrl;
-                 photoUrl = `${serverUrl}/${cleanUrl}`;
+                const serverUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+                const cleanUrl = photoUrl.startsWith('/') ? photoUrl.slice(1) : photoUrl;
+                photoUrl = `${serverUrl}/${cleanUrl}`;
             }
 
             // Convert to base64 to ensure it renders in PDF
@@ -125,20 +130,20 @@ const DistrictAdminDashboard = () => {
             }
 
             // Generate and open PDF
-            const blob = await pdf(<IdCardDocument driver={{...member, photoUrl: base64Image || member.photoUrl}} />).toBlob();
+            const blob = await pdf(<IdCardDocument driver={{ ...member, photoUrl: base64Image || member.photoUrl }} />).toBlob();
             if (blob) {
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
-                
+
                 // Record the print in the database
                 try {
                     const updatedMember = await AdminRepository.recordPrintId(member._id);
-                    
+
                     // Update the member in the list with the new print count
-                    setMembers(prevMembers => 
+                    setMembers(prevMembers =>
                         prevMembers.map(m => m._id === member._id ? { ...m, printCount: updatedMember.printCount } : m)
                     );
-                    
+
                     // Also update the view dialog if it's open
                     if (viewMember && viewMember._id === member._id) {
                         setViewMember({ ...viewMember, printCount: updatedMember.printCount });
@@ -196,8 +201,8 @@ const DistrictAdminDashboard = () => {
         try {
             setDeleteLoading(true);
             const result = await AdminRepository.deleteMember(memberId);
-            const message = result.softDeleted 
-                ? 'Member soft-deleted (already printed)' 
+            const message = result.softDeleted
+                ? 'Member soft-deleted (already printed)'
                 : 'Member permanently deleted';
             toast.success(message);
             setDeleteDialog({ isOpen: false, member: null });
@@ -437,7 +442,11 @@ const DistrictAdminDashboard = () => {
                                                 {member.status === ApprovalStatus.APPROVED && !member.isBlocked && (
                                                     <button
                                                         onClick={() => handlePrintId(member)}
-                                                        className="text-sm font-medium text-brand hover:text-brand-400"
+                                                        className={
+                                                            (!member.photoUrl || member.photoUrl === 'null' || member.photoUrl === 'undefined' || member.photoUrl === '')
+                                                                ? "text-sm font-medium text-red-500 hover:text-red-400"
+                                                                : "text-sm font-medium text-brand hover:text-brand-400"
+                                                        }
                                                     >
                                                         {member.printCount && member.printCount > 0 ? 'Reprint' : 'Print ID'}
                                                     </button>
@@ -538,7 +547,11 @@ const DistrictAdminDashboard = () => {
                                     {member.status === ApprovalStatus.APPROVED && !member.isBlocked && (
                                         <button
                                             onClick={() => handlePrintId(member)}
-                                            className="text-xs font-medium py-2 px-3 rounded-lg bg-brand/20 text-brand hover:bg-brand/30 transition-colors"
+                                            className={
+                                                (!member.photoUrl || member.photoUrl === 'null' || member.photoUrl === 'undefined' || member.photoUrl === '')
+                                                    ? "text-xs font-medium py-2 px-3 rounded-lg bg-red-900/20 text-red-500 hover:bg-red-900/30 transition-colors"
+                                                    : "text-xs font-medium py-2 px-3 rounded-lg bg-brand/20 text-brand hover:bg-brand/30 transition-colors"
+                                            }
                                         >
                                             {member.printCount && member.printCount > 0 ? 'Reprint' : 'Print ID'}
                                         </button>
@@ -592,7 +605,7 @@ const DistrictAdminDashboard = () => {
                                     <option value={100}>100 per page</option>
                                 </select>
                             </div>
-                            
+
                             {totalPages > 1 && (
                                 <div className="flex gap-2 w-full sm:w-auto justify-center">
                                     <button
@@ -607,11 +620,10 @@ const DistrictAdminDashboard = () => {
                                             <button
                                                 key={page}
                                                 onClick={() => setCurrentPage(page)}
-                                                className={`px-3 py-2 rounded-lg transition text-xs sm:text-sm ${
-                                                    currentPage === page
+                                                className={`px-3 py-2 rounded-lg transition text-xs sm:text-sm ${currentPage === page
                                                         ? 'bg-brand text-black'
                                                         : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                                                }`}
+                                                    }`}
                                             >
                                                 {page}
                                             </button>

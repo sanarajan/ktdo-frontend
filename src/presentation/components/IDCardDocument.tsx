@@ -5,56 +5,143 @@ import {
   View,
   Image,
   StyleSheet,
+  Font
 } from "@react-pdf/renderer";
 import type { Driver } from "../../common/types";
 
 const styles = StyleSheet.create({
   page: {
-    flexDirection: "column",
     backgroundColor: "#fff",
-    width: "85.6mm", // ATM Card size
+    width: "85.6mm",
     height: "53.98mm",
-    padding: 10,
+    padding: 0,
   },
   card: {
-    border: "1px solid #000",
     height: "100%",
-    borderRadius: 5,
-    padding: 10,
+    width: "100%",
     display: "flex",
-    flexDirection: "row",
+    flexDirection: "column",
+    position: "relative",
   },
-  photo: {
-    width: 60,
-    height: 70,
-    backgroundColor: "#ddd",
-    marginRight: 10,
-  },
-  info: {
-    flex: 1,
-    fontSize: 8,
+  // Black Header with Logo
+  header: {
+    backgroundColor: "#000",
+    height: "18%",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
     justifyContent: "center",
   },
-  header: {
-    fontSize: 10,
+  logo: {
+    width: 25,
+    height: 25,
+  },
+  // Middle Section (Photo + Title)
+  photoSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    height: "35%",
+    backgroundColor: "#fff",
+  },
+  photoContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    overflow: "hidden",
+    border: "1px solid #eee",
+  },
+  photo: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  mainTitle: {
+    fontSize: 14,
     fontWeight: "bold",
-    marginBottom: 5,
-    color: "black",
+    color: "#000",
+    marginLeft: 15,
+    width: "50%",
   },
-  label: {
-    fontSize: 6,
-    color: "gray",
+  // Bottom Main Body with Yellow Background
+  bottomBody: {
+    flex: 1,
+    backgroundColor: "#FFC107", // The brand yellow
+    flexDirection: "row",
+    padding: 2,
   },
-  value: {
-    marginBottom: 2,
+  // Vertical Sidebar Text
+  sidebar: {
+    width: "12%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  idNumber: {
-    position: "absolute",
-    bottom: 5,
-    right: 10,
+  verticalText: {
     fontSize: 8,
     fontWeight: "bold",
+    color: "#000",
+    transform: "rotate(-90deg)",
+    width: 150, // Ensures text doesn't wrap awkwardly
+    textAlign: "center",
   },
+  // White Info Box
+  infoBox: {
+    flex: 1,
+    backgroundColor: "#fff",
+    margin: 5,
+    borderRadius: 4,
+    padding: 10,
+    alignItems: "center",
+  },
+  driverName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 2,
+  },
+  idText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 8,
+  },
+  divider: {
+    width: "90%",
+    height: 1,
+    backgroundColor: "#FFC107",
+    marginBottom: 8,
+  },
+  detailRow: {
+    flexDirection: "row",
+    width: "100%",
+    marginBottom: 3,
+    justifyContent: "space-between",
+  },
+  detailLabel: {
+    fontSize: 8,
+    color: "#333",
+  },
+  detailValue: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  // Footer Black Bar
+  footer: {
+    backgroundColor: "#000",
+    height: "8%",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerText: {
+    fontSize: 7,
+    color: "#FFC107",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  }
 });
 
 interface IDCardProps {
@@ -64,30 +151,75 @@ interface IDCardProps {
 const IDCardDocument = ({ driver }: IDCardProps) => (
   <Document>
     <Page size={[242.6, 153]} style={styles.page}>
-      {/* 85.6mm * 2.83pt/mm ~ 242pt */}
       <View style={styles.card}>
-        <View style={styles.photo}>
-          <Image
-            src={driver.photoUrl}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-          />
+        
+        {/* 1. Header with Logo */}
+        <View style={styles.header}>
+          <Image src="/logo.png" style={styles.logo} /> 
         </View>
-        <View style={styles.info}>
-          <Text style={styles.header}>DRIVER MEMBERSHIP CARD</Text>
 
-          <Text style={styles.label}>Name</Text>
-          <Text style={styles.value}>{driver.name}</Text>
-
-          {/* Vehicle and License removed from card */}
-
-          <Text style={styles.idNumber}>{driver.uniqueId}</Text>
+        {/* 2. Photo and Main Title */}
+        <View style={styles.photoSection}>
+          <View style={styles.photoContainer}>
+            {driver.photoUrl ? (
+              <Image src={driver.photoUrl} style={styles.photo} />
+            ) : (
+              <View style={{ width: "100%", height: "100%", backgroundColor: "#eee" }} />
+            )}
+          </View>
+          <Text style={styles.mainTitle}>PROFESSIONAL IDENTITY CARD</Text>
         </View>
+
+        {/* 3. The Yellow Body Section */}
+        <View style={styles.bottomBody}>
+          
+          {/* Vertical Sidebar */}
+          <View style={styles.sidebar}>
+            <Text style={styles.verticalText}>PROFESSIONAL DRIVER IDENTITY CARD</Text>
+          </View>
+
+          {/* White Details Box */}
+          <View style={styles.infoBox}>
+            <Text style={styles.driverName}>{driver.name?.toUpperCase() || "NAME"}</Text>
+            <Text style={styles.idText}>ID: {driver.uniqueId || "PENDING"}</Text>
+            
+            <View style={styles.divider} />
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Blood Group</Text>
+              <Text style={styles.detailValue}>{driver.bloodGroup || "O+"}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Licence No</Text>
+              <Text style={styles.detailValue}>{(driver as any).licenceNumber || "N/A"}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Phone</Text>
+              <Text style={styles.detailValue}>{driver.phone || "N/A"}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>District</Text>
+              <Text style={styles.detailValue}>{driver.district || "Kozhikode"}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>State</Text>
+              <Text style={styles.detailValue}>Kerala</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 4. Bottom Footer Bar */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Professional Driver Identity Card</Text>
+        </View>
+
       </View>
     </Page>
   </Document>
 );
+
 export default IDCardDocument;

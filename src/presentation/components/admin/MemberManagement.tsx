@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 import { ApprovalStatus } from '../../../common/enums';
 import clsx from 'clsx';
 import { FaPlus } from 'react-icons/fa';
-import  {getBase64} from '../../../utils/ImageHelper';
+import { getBase64 } from '../../../utils/ImageHelper';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
 import { UserRole } from '../../../common/enums';
@@ -86,6 +86,11 @@ export const MemberManagement = () => {
     };
 
     const handlePrintId = async (member: any) => {
+        if (!member.photoUrl || member.photoUrl === 'null' || member.photoUrl === 'undefined' || member.photoUrl === '') {
+            toast.error("Please add a profile image to your profile.");
+            return;
+        }
+
         try {
             const base64Image = await getBase64(member.photoUrl);
             const blob = await pdf(
@@ -99,16 +104,16 @@ export const MemberManagement = () => {
 
             const url = URL.createObjectURL(blob);
             window.open(url, '_blank');
-            
+
             // Record the print in the database
             try {
                 const updatedMember = await AdminRepository.recordPrintId(member._id);
-                
+
                 // Update the member in the list with the new print count
-                setMembers(prevMembers => 
+                setMembers(prevMembers =>
                     prevMembers.map(m => m._id === member._id ? { ...m, printCount: updatedMember.printCount } : m)
                 );
-                
+
                 // Also update the view dialog if it's open
                 if (viewMember && viewMember._id === member._id) {
                     setViewMember({ ...viewMember, printCount: updatedMember.printCount });
@@ -251,9 +256,13 @@ export const MemberManagement = () => {
                                             {member.status === ApprovalStatus.APPROVED && !member.isBlocked && (
                                                 <button
                                                     onClick={() => handlePrintId(member)}
-                                                    className="text-sm font-medium text-brand-600 dark:text-brand hover:text-brand-500"
+                                                    className={
+                                                        (!member.photoUrl || member.photoUrl === 'null' || member.photoUrl === 'undefined' || member.photoUrl === '')
+                                                            ? "text-sm font-medium hover:underline transition-colors text-red-500 hover:text-red-600"
+                                                            : "text-sm font-medium hover:underline transition-colors text-brand-600 dark:text-brand hover:text-brand-500"
+                                                    }
                                                 >
-                                                    Print ID
+                                                    {member.printCount && member.printCount > 0 ? 'Reprint ID' : 'Print ID'}
                                                 </button>
                                             )}
                                             {user?.role !== UserRole.MAIN_ADMIN && (
@@ -306,7 +315,7 @@ export const MemberManagement = () => {
                                 <option value={100}>100 per page</option>
                             </select>
                         </div>
-                        
+
                         {totalPages > 1 && (
                             <div className="flex gap-2">
                                 <button
@@ -321,11 +330,10 @@ export const MemberManagement = () => {
                                         <button
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
-                                            className={`px-3 py-2 rounded-lg transition ${
-                                                currentPage === page
-                                                    ? 'bg-brand text-black'
-                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                                            }`}
+                                            className={`px-3 py-2 rounded-lg transition ${currentPage === page
+                                                ? 'bg-brand text-black'
+                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
+                                                }`}
                                         >
                                             {page}
                                         </button>

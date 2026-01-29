@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.css';
+import { FaCrop, FaCheck } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthRepository } from '../../data/repositories/AuthRepository';
@@ -10,13 +13,14 @@ import { ApprovalStatus, UserRole } from '../../common/enums';
 import { ImageValidator } from '../../utils/ImageValidator';
 import { SUCCESS_MESSAGES } from '../../common/successMessages';
 import { ERROR_MESSAGES } from '../../common/errorMessages';
-import { FaUser, FaMapMarkerAlt, FaCamera, FaIdCardAlt, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaMapMarkerAlt, FaCamera, FaIdCardAlt, FaArrowLeft, FaTimes } from 'react-icons/fa';
 
 interface RegisterFormData {
     name: string;
     email: string;
     phone: string;
     bloodGroup: string;
+    licenceNumber: string;
     state: string;
     district: string;
     houseName: string;
@@ -34,7 +38,7 @@ interface StateCodeMapping {
 
 const RegisterPage: React.FC = () => {
     const [formData, setFormData] = useState<RegisterFormData>({
-        name: '', email: '', phone: '', bloodGroup: '', state: '',
+        name: '', email: '', phone: '', bloodGroup: '', licenceNumber: '', state: '',
         district: '', houseName: '', place: '', pin: '',
         stateCode: '', rtoCode: '', stateRtoCode: ''
     });
@@ -43,6 +47,13 @@ const RegisterPage: React.FC = () => {
     const [photoPreview, setPhotoPreview] = useState<string>('');
     const [photoError, setPhotoError] = useState<string>('');
     const [photoInfo, setPhotoInfo] = useState<string>('');
+
+    // Cropper state
+    const [showCropper, setShowCropper] = useState(false);
+    const [tempImageSrc, setTempImageSrc] = useState('');
+    const imageRef = useRef<HTMLImageElement>(null);
+    const cropperRef = useRef<Cropper | null>(null);
+
     const [states, setStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
     const [stateCodes, setStateCodes] = useState<StateCodeMapping[]>([]);
@@ -66,12 +77,13 @@ const RegisterPage: React.FC = () => {
     const getFieldError = (name: keyof RegisterFormData, value: string): string => {
         const trimmed = value.trim();
         if (!trimmed) return 'this field is required';
-        
+
         // Secondary validations
         if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'invalid email format';
         if (name === 'phone' && !/^\d{10}$/.test(trimmed)) return 'must be 10 digits';
         if (name === 'pin' && !/^\d{6}$/.test(trimmed)) return 'invalid pin code';
-        
+        if (name === 'licenceNumber' && (trimmed.length < 5 || trimmed.length > 20)) return 'must be 5-20 characters';
+
         return '';
     };
 
@@ -88,7 +100,7 @@ const RegisterPage: React.FC = () => {
         }
         setFormData(prev => ({ ...prev, state, district: '', stateCode: selectedStateCode, rtoCode: '', stateRtoCode: '' }));
         validateField('state', state);
-        
+
         if (state) {
             try {
                 const data = await LocationRepository.getDistricts(state);
@@ -115,14 +127,103 @@ const RegisterPage: React.FC = () => {
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        setPhotoError(''); setPhotoPreview('');
-        if (!file) { setPhoto(null); setPhotoError('this field is required'); return; }
-        const validation = await ImageValidator.validateImage(file);
-        if (!validation.valid) { setPhotoError(validation.error || 'invalid image'); return; }
-        setPhoto(file);
+        setPhotoError('');
+        setPhotoInfo('');
+        setPhotoPreview('');
+
+        if (!file) {
+            setPhoto(null);
+            return;
+        }
+
+        // BEFORE CROP: Validate type, extension, max size, corruption
+        const validation = await ImageValidator.validateBeforeCrop(file);
+        if (!validation.valid) {
+            setPhotoError(validation.error || 'Invalid image');
+            setPhoto(null);
+            e.target.value = '';
+            return;
+        }
+
+        // Load image for cropping
         const reader = new FileReader();
-        reader.onload = (event) => setPhotoPreview(event.target?.result as string);
+        reader.onload = (event) => {
+            setTempImageSrc(event.target?.result as string);
+            setShowCropper(true);
+        };
         reader.readAsDataURL(file);
+    };
+
+    useEffect(() => {
+        if (showCropper && imageRef.current && !cropperRef.current) {
+            cropperRef.current = new Cropper(imageRef.current, {
+                aspectRatio: 413 / 531,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 0.8,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+            });
+        }
+        return () => {
+            if (cropperRef.current) {
+                cropperRef.current.destroy();
+                cropperRef.current = null;
+            }
+        };
+    }, [showCropper]);
+
+    const handleCropComplete = async () => {
+        if (cropperRef.current) {
+            const cropper = cropperRef.current as any;
+            const canvas = cropper.getCroppedCanvas({
+                width: 413,
+                height: 531,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+
+            canvas.toBlob(async (blob: Blob | null) => {
+                if (blob) {
+                    const croppedFile = new File([blob], 'cropped-photo.jpg', { type: 'image/jpeg' });
+
+                    // AFTER CROP: Validate min size, exact 413x531, etc.
+                    const validation = await ImageValidator.validateAfterCrop(croppedFile);
+                    if (!validation.valid) {
+                        setPhotoError(validation.error || 'Cropped image validation failed');
+                        setPhoto(null);
+                        setShowCropper(false);
+                        setTempImageSrc('');
+                        return;
+                    }
+
+                    setPhoto(croppedFile);
+                    const previewUrl = URL.createObjectURL(croppedFile);
+                    setPhotoPreview(previewUrl);
+                    setPhotoInfo(`✓ Image cropped successfully (${ImageValidator.getFileSizeKB(croppedFile)} KB, 413x531)`);
+                    setShowCropper(false);
+                    setTempImageSrc('');
+                    if (cropperRef.current) {
+                        cropperRef.current.destroy();
+                        cropperRef.current = null;
+                    }
+                }
+            }, 'image/jpeg', 0.9);
+        }
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+        setTempImageSrc('');
+        if (cropperRef.current) {
+            cropperRef.current.destroy();
+            cropperRef.current = null;
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -137,7 +238,6 @@ const RegisterPage: React.FC = () => {
             }
         });
 
-        if (!photo) { setPhotoError('this field is required'); hasErrors = true; }
         setErrors(newErrors);
 
         if (hasErrors) {
@@ -167,34 +267,34 @@ const RegisterPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#080808] text-white selection:bg-brand">
-           {/* Navigation - Ultra Modern Glass Style (Synced with Home) */}
-<nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
-    <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-            {/* Logo Section */}
-            <div className="flex items-center gap-3">
-                <motion.img 
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    src="/logo.png" 
-                    alt="KTDO Logo" 
-                    className="w-10 h-10 object-contain" 
-                />
-                <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-brand to-yellow-500 bg-clip-text text-transparent">
-                    KTDO
-                </h1>
-            </div>
+            {/* Navigation - Ultra Modern Glass Style (Synced with Home) */}
+            <nav className="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-20">
+                        {/* Logo Section */}
+                        <div className="flex items-center gap-3">
+                            <motion.img
+                                whileHover={{ rotate: 360 }}
+                                transition={{ duration: 0.5 }}
+                                src="/logo.png"
+                                alt="KTDO Logo"
+                                className="w-10 h-10 object-contain"
+                            />
+                            <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-brand to-yellow-500 bg-clip-text text-transparent">
+                                KTDO
+                            </h1>
+                        </div>
 
-            {/* Back to Home Link - Styled like the Home nav items */}
-            <div className="flex items-center gap-8">
-                <Link to="/" className="group flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-brand transition">
-                    <FaArrowLeft className="group-hover:-translate-x-1 transition-transform text-brand" />
-                    Back to Home
-                </Link>
-            </div>
-        </div>
-    </div>
-</nav>
+                        {/* Back to Home Link - Styled like the Home nav items */}
+                        <div className="flex items-center gap-8">
+                            <Link to="/" className="group flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-brand transition">
+                                <FaArrowLeft className="group-hover:-translate-x-1 transition-transform text-brand" />
+                                Back to Home
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </nav>
 
             <div className="pt-32 pb-20 px-4">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
@@ -212,11 +312,40 @@ const RegisterPage: React.FC = () => {
                             <div className="flex flex-col md:flex-row gap-8 items-center">
                                 <div className={`w-40 h-52 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden transition-all 
                                     ${photoPreview ? 'border-brand' : 'border-gray-700'}`}>
-                                    {photoPreview ? <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" /> : <FaUser className="text-4xl text-gray-700" />}
+                                    {photoPreview ? (
+                                        <div className="relative w-full h-full">
+                                            <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setPhoto(null);
+                                                    setPhotoPreview('');
+                                                    setPhotoInfo('');
+                                                    setPhotoError('');
+                                                }}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md z-10"
+                                                title="Clear Photo"
+                                            >
+                                                <FaTimes size={12} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <FaUser className="text-4xl text-gray-700" />
+                                    )}
                                 </div>
                                 <div className="flex-1 space-y-4">
-                                    <label className="block text-sm font-bold text-gray-300">Passport Photo <span className="text-brand">*</span></label>
-                                    <input type="file" accept=".jpg,.jpeg,.png" onChange={handlePhotoChange} className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-6 file:rounded-full file:bg-brand file:text-black file:font-bold cursor-pointer" />
+                                    <label className="block text-sm font-bold text-gray-300">Passport Photo</label>
+                                    <input
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png"
+                                        onChange={handlePhotoChange}
+                                        className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-6 file:rounded-full file:bg-brand file:text-black file:font-bold cursor-pointer"
+                                        ref={(input) => {
+                                            // Reset input value when photo is cleared
+                                            if (input && !photo) input.value = '';
+                                        }}
+                                    />
+
                                     <FieldError msg={photoError} />
                                 </div>
                             </div>
@@ -230,7 +359,7 @@ const RegisterPage: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} onBlur={() => validateField('name', formData.name)} error={errors.name} />
                                 <Input label="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} onBlur={() => validateField('email', formData.email)} error={errors.email} />
-                                
+
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-gray-400">Phone Number</label>
                                     <div className="flex gap-2">
@@ -242,12 +371,14 @@ const RegisterPage: React.FC = () => {
 
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-gray-400">Blood Group</label>
-                                    <select name="bloodGroup" value={formData.bloodGroup} onBlur={() => validateField('bloodGroup', formData.bloodGroup)} onChange={(e) => {setFormData(p => ({...p, bloodGroup: e.target.value})); validateField('bloodGroup', e.target.value);}} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.bloodGroup ? 'border-red-500' : 'border-white/10'} focus:ring-2 focus:ring-brand outline-none text-white`}>
+                                    <select name="bloodGroup" value={formData.bloodGroup} onBlur={() => validateField('bloodGroup', formData.bloodGroup)} onChange={(e) => { setFormData(p => ({ ...p, bloodGroup: e.target.value })); validateField('bloodGroup', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.bloodGroup ? 'border-red-500' : 'border-white/10'} focus:ring-2 focus:ring-brand outline-none text-white`}>
                                         <option value="" className="bg-black">Select Group</option>
                                         {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(g => <option key={g} value={g} className="bg-black">{g}</option>)}
                                     </select>
                                     <FieldError msg={errors.bloodGroup} />
                                 </div>
+
+                                <Input label="Licence Number" name="licenceNumber" value={formData.licenceNumber} onChange={handleChange} onBlur={() => validateField('licenceNumber', formData.licenceNumber)} error={errors.licenceNumber} maxLength={20} />
                             </div>
                         </div>
 
@@ -265,7 +396,7 @@ const RegisterPage: React.FC = () => {
                                     <FieldError msg={errors.state} />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <select name="district" value={formData.district} disabled={!formData.state} onBlur={() => validateField('district', formData.district)} onChange={(e) => {setFormData(p => ({...p, district: e.target.value})); validateField('district', e.target.value);}} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.district ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
+                                    <select name="district" value={formData.district} disabled={!formData.state} onBlur={() => validateField('district', formData.district)} onChange={(e) => { setFormData(p => ({ ...p, district: e.target.value })); validateField('district', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.district ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
                                         <option value="" className="bg-black">Select District</option>
                                         {districts.map(d => <option key={d} value={d} className="bg-black">{d}</option>)}
                                     </select>
@@ -298,6 +429,58 @@ const RegisterPage: React.FC = () => {
                     </form>
                 </motion.div>
             </div>
+            {/* Image Cropper Modal - Moved Outside for Z-Index Fix */}
+            {showCropper && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 99999 }}>
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-white/20 relative" style={{ zIndex: 100000 }}>
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0 z-10 bg-white dark:bg-gray-900 rounded-t-2xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center text-brand">
+                                    <FaCrop size={16} />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Crop Profile Photo</h3>
+                            </div>
+                        </div>
+
+                        {/* Cropper Container - Fix for overflow */}
+                        <div className="flex-1 overflow-hidden p-6 bg-gray-50 dark:bg-gray-800 relative min-h-0">
+                            <div className="w-full h-full flex items-center justify-center">
+                                <img
+                                    ref={imageRef}
+                                    src={tempImageSrc}
+                                    alt="Crop preview"
+                                    className="max-w-full max-h-full object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0 z-10 relative rounded-b-2xl">
+                            <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400">
+                                Drag to reposition • Resize crop box
+                            </p>
+                            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                                <button
+                                    type="button"
+                                    onClick={handleCropCancel}
+                                    className="px-5 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCropComplete}
+                                    className="px-6 py-2 rounded-lg bg-brand hover:bg-brand-dark text-black font-bold text-sm shadow-lg shadow-brand/20 flex items-center gap-2 transition-all"
+                                >
+                                    <FaCheck size={14} />
+                                    Apply Crop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
