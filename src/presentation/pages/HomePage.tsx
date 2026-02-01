@@ -70,25 +70,25 @@ const HomePage = () => {
                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
                              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
                            </span>
-                           Version 2.0 Live
+                          KTDO 
                         </div>
                         
                         <h2 className="text-5xl lg:text-7xl font-black tracking-tight mb-8 leading-[1.1]">
-                            The Future of <br />
-                            <span className="text-brand">Professional Driving.</span>
+                           Register to   <br />
+                            <span className="text-brand">Create Your ID Card.</span>
                         </h2>
                         
                         <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
-                            Empowering Kerala's taxi community with digital identity, verified security, and a robust professional network. 
+                           Please ensure all details are entered accurately. The information you provide in this form will be printed exactly as written on your final ID card. 
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link to="/register" className="group w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-brand text-black font-black rounded-2xl hover:scale-105 transition-all shadow-2xl">
-                                <FaUserPlus /> Join the Lobby
+                                <FaUserPlus /> Add your details
                                 <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                             <Link to="/admin" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all backdrop-blur-md">
-                                <FaSignInAlt /> Admin Login
+                                <FaSignInAlt /> Watch video
                             </Link>
                         </div>
                     </motion.div>
