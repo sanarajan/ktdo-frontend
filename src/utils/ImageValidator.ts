@@ -32,9 +32,9 @@ export class ImageValidator {
   private static readonly PASSPORT_ASPECT_RATIO = 1.0;
   private static readonly ASPECT_RATIO_TOLERANCE = 0.02; // Allow 2% tolerance
 
-  // Acceptable aspect ratio range for passport photos (portrait) - legacy
-  private static readonly MIN_ASPECT_RATIO = 0.7; // Allow some flexibility
-  private static readonly MAX_ASPECT_RATIO = 0.85;
+  // Acceptable aspect ratio range for square photos
+  private static readonly MIN_ASPECT_RATIO = 0.98;
+  private static readonly MAX_ASPECT_RATIO = 1.02;
 
   /**
    * BEFORE CROP: Validate file type, max size, and if image is corrupt

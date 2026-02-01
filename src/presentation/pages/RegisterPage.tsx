@@ -443,14 +443,14 @@ const RegisterPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Cropper Container - Fix for overflow */}
-                        <div className="flex-1 overflow-hidden p-6 bg-gray-50 dark:bg-gray-800 relative min-h-0">
+                        {/* Cropper Container - Fix for overflow and scrolling */}
+                        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-800 relative min-h-[300px]">
                             <div className="w-full h-full flex items-center justify-center">
                                 <img
                                     ref={imageRef}
                                     src={tempImageSrc}
                                     alt="Crop preview"
-                                    className="max-w-full max-h-full object-contain"
+                                    className="max-w-full max-h-[60vh] object-contain block"
                                 />
                             </div>
                         </div>

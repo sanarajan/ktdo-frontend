@@ -641,7 +641,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-hidden p-6 bg-gray-50 dark:bg-gray-800">
+                            <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-800">
                                 <div className="w-full h-full flex items-center justify-center">
                                     <img
                                         ref={imageRef}
