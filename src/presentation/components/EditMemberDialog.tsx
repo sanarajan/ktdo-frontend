@@ -134,7 +134,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
     useEffect(() => {
         if (showCropper && imageRef.current && !cropperRef.current) {
             cropperRef.current = new Cropper(imageRef.current, {
-                aspectRatio: 413 / 531,
+                aspectRatio: 1,
                 viewMode: 1,
                 dragMode: 'move',
                 autoCropArea: 0.8,
@@ -160,7 +160,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             const cropper = cropperRef.current as any;
             const canvas = cropper.getCroppedCanvas({
                 width: 413,
-                height: 531,
+                height: 413,
                 imageSmoothingEnabled: true,
                 imageSmoothingQuality: 'high',
             });
@@ -182,7 +182,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                     setPreview(previewUrl);
 
                     const sizeKB = ImageValidator.getFileSizeKB(croppedFile);
-                    setPhotoInfo(`✓ Image cropped successfully (${sizeKB} KB, 413x531)`);
+                    setPhotoInfo(`✓ Image cropped successfully (${sizeKB} KB, 413x413)`);
 
                     setShowCropper(false);
                     setTempImageSrc('');
@@ -497,7 +497,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                     <div className="flex-1 text-center md:text-left space-y-2">
                                         <h4 className="font-bold text-gray-900 dark:text-white">Profile Picture</h4>
                                         <p className="text-xs text-gray-500 leading-relaxed max-w-xs">
-                                            Portrait JPG/PNG, 30KB - 300KB. Click the image to update.
+                                            Square Portrait JPG/PNG, 30KB - 300KB. Click the image to update.
                                         </p>
                                         {photoError && <p className="text-xs font-bold text-red-500 flex items-center justify-center md:justify-start gap-1"><span>✗</span> {photoError}</p>}
                                         {photoInfo && <p className="text-xs font-bold text-green-500">{photoInfo}</p>}

@@ -249,7 +249,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     useEffect(() => {
         if (showCropper && imageRef.current && !cropperRef.current) {
             cropperRef.current = new Cropper(imageRef.current, {
-                aspectRatio: 413 / 531, // ✅ CORRECT PASSPORT RATIO
+                aspectRatio: 1, // ✅ SQUARE RATIO
                 viewMode: 1,
                 dragMode: 'move',
                 autoCropArea: 0.8,
@@ -277,7 +277,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
             const cropper = cropperRef.current as any;
             const canvas = cropper.getCroppedCanvas({
                 width: 413,
-                height: 531,
+                height: 413,
                 imageSmoothingEnabled: true,
                 imageSmoothingQuality: 'high',
             });
@@ -301,7 +301,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                     setPhotoPreview(previewUrl);
 
                     const sizeKB = ImageValidator.getFileSizeKB(croppedFile);
-                    setPhotoInfo(`✓ Image cropped successfully (${sizeKB} KB, 413x531)`);
+                    setPhotoInfo(`✓ Image cropped successfully (${sizeKB} KB, 413x413)`);
 
                     // Close cropper
                     setShowCropper(false);
@@ -473,7 +473,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                             ) : (
                                                 <div className="text-center px-4">
                                                     <FaCamera className="mx-auto text-gray-300 mb-2 text-2xl" />
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">Upload Portrait<br />(30KB-300KB)</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">Upload Square Portrait<br />(30KB-300KB)</span>
                                                 </div>
 
                                             )}

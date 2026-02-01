@@ -157,7 +157,7 @@ const RegisterPage: React.FC = () => {
     useEffect(() => {
         if (showCropper && imageRef.current && !cropperRef.current) {
             cropperRef.current = new Cropper(imageRef.current, {
-                aspectRatio: 413 / 531,
+                aspectRatio: 1,
                 viewMode: 1,
                 dragMode: 'move',
                 autoCropArea: 0.8,
@@ -183,7 +183,7 @@ const RegisterPage: React.FC = () => {
             const cropper = cropperRef.current as any;
             const canvas = cropper.getCroppedCanvas({
                 width: 413,
-                height: 531,
+                height: 413,
                 imageSmoothingEnabled: true,
                 imageSmoothingQuality: 'high',
             });
@@ -205,7 +205,7 @@ const RegisterPage: React.FC = () => {
                     setPhoto(croppedFile);
                     const previewUrl = URL.createObjectURL(croppedFile);
                     setPhotoPreview(previewUrl);
-                    setPhotoInfo(`✓ Image cropped successfully (${ImageValidator.getFileSizeKB(croppedFile)} KB, 413x531)`);
+                    setPhotoInfo(`✓ Image cropped successfully (${ImageValidator.getFileSizeKB(croppedFile)} KB, 413x413)`);
                     setShowCropper(false);
                     setTempImageSrc('');
                     if (cropperRef.current) {
@@ -334,7 +334,7 @@ const RegisterPage: React.FC = () => {
                                     )}
                                 </div>
                                 <div className="flex-1 space-y-4">
-                                    <label className="block text-sm font-bold text-gray-300">Passport Photo</label>
+                                    <label className="block text-sm font-bold text-gray-300">Square Passport Photo (413x413)</label>
                                     <input
                                         type="file"
                                         accept=".jpg,.jpeg,.png"

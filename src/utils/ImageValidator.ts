@@ -1,10 +1,9 @@
 /**
  * Image validation utility for frontend
- * Validates passport photo requirements:
+ * Validates member photo requirements:
  * - Type: JPG, JPEG, PNG only
- * - Size: 10 KB - 300 KB
- * - Dimensions: Portrait orientation (height > width)
- * - Aspect ratio: Suitable for passport photos
+ * - Size: 15 KB - 300 KB
+ * - Dimensions: Square (1:1 aspect ratio)
  */
 
 interface ValidationResult {
@@ -23,14 +22,14 @@ export class ImageValidator {
   private static readonly ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png'];
 
   // File size limits (in bytes)
- private static readonly MIN_FILE_SIZE = 15 * 1024; // 15 KB ✅
+  private static readonly MIN_FILE_SIZE = 15 * 1024; // 15 KB ✅
 
-private static readonly MAX_FILE_SIZE = 200 * 1024; // 200 KB
+  private static readonly MAX_FILE_SIZE = 200 * 1024; // 200 KB
 
-  // Exact passport photo dimensions
+  // Exact square dimensions for testing
   private static readonly PASSPORT_WIDTH = 413;
-  private static readonly PASSPORT_HEIGHT = 531;
-  private static readonly PASSPORT_ASPECT_RATIO = 413 / 531; // 0.778
+  private static readonly PASSPORT_HEIGHT = 413;
+  private static readonly PASSPORT_ASPECT_RATIO = 1.0;
   private static readonly ASPECT_RATIO_TOLERANCE = 0.02; // Allow 2% tolerance
 
   // Acceptable aspect ratio range for passport photos (portrait) - legacy
@@ -192,37 +191,33 @@ private static readonly MAX_FILE_SIZE = 200 * 1024; // 200 KB
   }
 
   /**
-   * Validate image dimensions and aspect ratio for passport photo (exact 413:531 ratio)
+   * Validate image dimensions and aspect ratio for square photo (approx 413x413)
    */
   static validateDimensionsAndAspectRatio(
-  dimensions: ImageDimensions
-): ValidationResult {
-  const { width, height } = dimensions;
+    dimensions: ImageDimensions
+  ): ValidationResult {
+    const { width, height } = dimensions;
+    const TOLERANCE = 5; // Allow 5px deviation for browser side cropping
 
-  // STRICT passport size check
-  if (width !== this.PASSPORT_WIDTH || height !== this.PASSPORT_HEIGHT) {
-    return {
-      valid: false,
-      error: `Cropped image must be exactly ${this.PASSPORT_WIDTH} × ${this.PASSPORT_HEIGHT} pixels`
-    };
+    // Check if dimensions are close to targets
+    const isWidthOk = Math.abs(width - this.PASSPORT_WIDTH) <= TOLERANCE;
+    const isHeightOk = Math.abs(height - this.PASSPORT_HEIGHT) <= TOLERANCE;
+
+    if (!isWidthOk || !isHeightOk) {
+      return {
+        valid: false,
+        error: `Cropped image size (${width}x${height}) is not close enough to required ${this.PASSPORT_WIDTH}x${this.PASSPORT_HEIGHT} pixels`
+      };
+    }
+
+    return { valid: true };
   }
 
-  return { valid: true };
-}
-
   /**
-   * Validate image dimensions for passport photo (legacy - with flexible ratio)
+   * Validate image dimensions for square photo
    */
   static validateDimensions(dimensions: ImageDimensions): ValidationResult {
     const { width, height } = dimensions;
-
-    // Check if image is in portrait orientation
-    if (width > height) {
-      return {
-        valid: false,
-        error: 'Image must be in portrait orientation (height > width)'
-      };
-    }
 
     // Calculate aspect ratio
     const aspectRatio = width / height;
@@ -231,7 +226,7 @@ private static readonly MAX_FILE_SIZE = 200 * 1024; // 200 KB
     if (aspectRatio < this.MIN_ASPECT_RATIO || aspectRatio > this.MAX_ASPECT_RATIO) {
       return {
         valid: false,
-        error: `Image aspect ratio not suitable for passport photo. Please upload a portrait-oriented photo.`
+        error: `Image aspect ratio must be square (approx 1:1). Current ratio: ${aspectRatio.toFixed(2)}`
       };
     }
 
