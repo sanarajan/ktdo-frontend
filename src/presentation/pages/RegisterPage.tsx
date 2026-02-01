@@ -334,7 +334,7 @@ const RegisterPage: React.FC = () => {
                                     )}
                                 </div>
                                 <div className="flex-1 space-y-4">
-                                    <label className="block text-sm font-bold text-gray-300">Square Passport Photo (413x413)</label>
+                                    <label className="block text-sm font-bold text-gray-300">Square Passport Photo (413x413, 15KB-2MB)</label>
                                     <input
                                         type="file"
                                         accept=".jpg,.jpeg,.png"

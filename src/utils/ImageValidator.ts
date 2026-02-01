@@ -2,7 +2,7 @@
  * Image validation utility for frontend
  * Validates member photo requirements:
  * - Type: JPG, JPEG, PNG only
- * - Size: 15 KB - 300 KB
+ * - Size: 15 KB - 2 MB
  * - Dimensions: Square (1:1 aspect ratio)
  */
 
@@ -24,7 +24,7 @@ export class ImageValidator {
   // File size limits (in bytes)
   private static readonly MIN_FILE_SIZE = 15 * 1024; // 15 KB ✅
 
-  private static readonly MAX_FILE_SIZE = 200 * 1024; // 200 KB
+  private static readonly MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
   // Exact square dimensions for testing
   private static readonly PASSPORT_WIDTH = 413;
@@ -68,7 +68,7 @@ export class ImageValidator {
     if (file.size > this.MAX_FILE_SIZE) {
       return {
         valid: false,
-        error: `Image too large. Maximum size: ${this.MAX_FILE_SIZE / 1024} KB`
+        error: `Image too large. Maximum size: 2 MB`
       };
     }
 
@@ -151,7 +151,7 @@ export class ImageValidator {
     if (file.size > this.MAX_FILE_SIZE) {
       return {
         valid: false,
-        error: `Image too large. Maximum size: ${this.MAX_FILE_SIZE / 1024} KB`
+        error: `Image too large. Maximum size: 2 MB`
       };
     }
 

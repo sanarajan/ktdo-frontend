@@ -497,7 +497,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                     <div className="flex-1 text-center md:text-left space-y-2">
                                         <h4 className="font-bold text-gray-900 dark:text-white">Profile Picture</h4>
                                         <p className="text-xs text-gray-500 leading-relaxed max-w-xs">
-                                            Square Portrait JPG/PNG, 30KB - 300KB. Click the image to update.
+                                            Square Portrait JPG/PNG, 15KB - 2MB. Click the image to update.
                                         </p>
                                         {photoError && <p className="text-xs font-bold text-red-500 flex items-center justify-center md:justify-start gap-1"><span>✗</span> {photoError}</p>}
                                         {photoInfo && <p className="text-xs font-bold text-green-500">{photoInfo}</p>}

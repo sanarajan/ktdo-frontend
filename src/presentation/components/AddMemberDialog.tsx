@@ -473,7 +473,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                             ) : (
                                                 <div className="text-center px-4">
                                                     <FaCamera className="mx-auto text-gray-300 mb-2 text-2xl" />
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">Upload Square Portrait<br />(30KB-300KB)</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">Upload Square Portrait<br />(15KB-2MB)</span>
                                                 </div>
 
                                             )}
