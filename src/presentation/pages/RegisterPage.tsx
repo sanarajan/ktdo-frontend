@@ -254,7 +254,7 @@ const RegisterPage: React.FC = () => {
             data.append('photo', photo!);
             await AuthRepository.registerDriver(data);
             toast.success(SUCCESS_MESSAGES.REGISTRATION_SUCCESS);
-            setTimeout(() => navigate('/'), 2000);
+            setTimeout(() => navigate('/registration-success'), 1500);
         } catch (error: any) {
             toast.error(error.response?.data?.message || ERROR_MESSAGES.REGISTRATION_FAILED);
         } finally { setIsLoading(false); }

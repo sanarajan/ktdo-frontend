@@ -12,6 +12,8 @@ import ContactPage from './presentation/pages/ContactPage';
 import MainAdminDashboard from './presentation/pages/MainAdminDashboard';
 import DistrictAdminDashboard from './presentation/pages/DistrictAdminDashboard';
 import MemberDashboard from './presentation/pages/MemberDashboard';
+import RegistrationSuccessPage from './presentation/pages/RegistrationSuccessPage';
+import TutorialVideoPage from './presentation/pages/TutorialVideoPage';
 import { UserRole } from './common/enums';
 
 // Protected Route Component
@@ -72,6 +74,8 @@ function App() {
 
           {/* Member Registration (Always accessible - NOT auth-related) */}
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/registration-success" element={<RegistrationSuccessPage />} />
+          <Route path="/tutorial" element={<TutorialVideoPage />} />
 
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
