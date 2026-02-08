@@ -148,78 +148,90 @@ interface IDCardProps {
   driver: Driver;
 }
 
-const IDCardDocument = ({ driver }: IDCardProps) => (
-  <Document>
-    <Page size={[242.6, 153]} style={styles.page}>
-      <View style={styles.card}>
-        
-        {/* 1. Header with Logo */}
-        <View style={styles.header}>
-          <Image src="/logo.png" style={styles.logo} /> 
-        </View>
+const IDCardDocument = ({ driver }: IDCardProps) => {
+  const housePart = (driver.houseName || '').trim();
+  const placePart = (driver.place || '').trim();
+  const pinPart = (driver.pin || '').trim();
+  const displayAddress = [housePart, placePart, pinPart].filter(Boolean).join(', ');
 
-        {/* 2. Photo and Main Title */}
-        <View style={styles.photoSection}>
-          <View style={styles.photoContainer}>
-            {driver.photoUrl ? (
-              <Image src={driver.photoUrl} style={styles.photo} />
-            ) : (
-              <View style={{ width: "100%", height: "100%", backgroundColor: "#eee" }} />
-            )}
-          </View>
-          <Text style={styles.mainTitle}>PROFESSIONAL IDENTITY CARD</Text>
-        </View>
+  return (
+    <Document>
+      <Page size={[242.6, 153]} style={styles.page}>
+        <View style={styles.card}>
 
-        {/* 3. The Yellow Body Section */}
-        <View style={styles.bottomBody}>
-          
-          {/* Vertical Sidebar */}
-          <View style={styles.sidebar}>
-            <Text style={styles.verticalText}>PROFESSIONAL DRIVER IDENTITY CARD</Text>
+          {/* 1. Header with Logo */}
+          <View style={styles.header}>
+            <Image src="/logo.png" style={styles.logo} />
           </View>
 
-          {/* White Details Box */}
-          <View style={styles.infoBox}>
-            <Text style={styles.driverName}>{driver.name?.toUpperCase() || "NAME"}</Text>
-            <Text style={styles.idText}>ID: {driver.uniqueId || "PENDING"}</Text>
-            
-            <View style={styles.divider} />
+          {/* 2. Photo and Main Title */}
+          <View style={styles.photoSection}>
+            <View style={styles.photoContainer}>
+              {driver.photoUrl ? (
+                <Image src={driver.photoUrl} style={styles.photo} />
+              ) : (
+                <View style={{ width: "100%", height: "100%", backgroundColor: "#eee" }} />
+              )}
+            </View>
+            <Text style={styles.mainTitle}>PROFESSIONAL IDENTITY CARD</Text>
+          </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Blood Group</Text>
-              <Text style={styles.detailValue}>{driver.bloodGroup || "O+"}</Text>
+          {/* 3. The Yellow Body Section */}
+          <View style={styles.bottomBody}>
+
+            {/* Vertical Sidebar */}
+            <View style={styles.sidebar}>
+              <Text style={styles.verticalText}>PROFESSIONAL DRIVER IDENTITY CARD</Text>
             </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Licence No</Text>
-              <Text style={styles.detailValue}>{(driver as any).licenceNumber || "N/A"}</Text>
-            </View>
+            {/* White Details Box */}
+            <View style={styles.infoBox}>
+              <Text style={styles.driverName}>{driver.name?.toUpperCase() || "NAME"}</Text>
+              <Text style={styles.idText}>ID: {driver.uniqueId || "PENDING"}</Text>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Phone</Text>
-              <Text style={styles.detailValue}>{driver.phone || "N/A"}</Text>
-            </View>
+              <View style={styles.divider} />
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>District</Text>
-              <Text style={styles.detailValue}>{driver.district || "Kozhikode"}</Text>
-            </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Blood Group</Text>
+                <Text style={styles.detailValue}>{driver.bloodGroup || "O+"}</Text>
+              </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>State</Text>
-              <Text style={styles.detailValue}>Kerala</Text>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Licence No</Text>
+                <Text style={styles.detailValue}>{(driver as any).licenceNumber || "N/A"}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Phone</Text>
+                <Text style={styles.detailValue}>{driver.phone || "N/A"}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Address</Text>
+                <Text style={styles.detailValue}>{displayAddress || "N/A"}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}> District</Text>
+                <Text style={styles.detailValue}>{driver.district || "N/A"}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}> State</Text>
+                <Text style={styles.detailValue}>{driver.state || "N/A"}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* 4. Bottom Footer Bar */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Professional Driver Identity Card</Text>
-        </View>
 
-      </View>
-    </Page>
-  </Document>
-);
+          {/* 4. Bottom Footer Bar */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Professional Driver Identity Card</Text>
+          </View>
+
+        </View>
+      </Page>
+    </Document>
+  );
+};
 
 export default IDCardDocument;

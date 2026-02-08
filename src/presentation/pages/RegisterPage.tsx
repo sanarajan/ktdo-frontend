@@ -21,11 +21,13 @@ interface RegisterFormData {
     phone: string;
     bloodGroup: string;
     licenceNumber: string;
-    state: string;
-    district: string;
+    workingState: string;
+    workingDistrict: string;
     houseName: string;
     place: string;
     pin: string;
+    state: string;
+    district: string;
     stateCode: string;
     rtoCode: string;
     stateRtoCode: string;
@@ -38,15 +40,15 @@ interface StateCodeMapping {
 
 const RegisterPage: React.FC = () => {
     const [formData, setFormData] = useState<RegisterFormData>({
-        name: '', email: '', phone: '', bloodGroup: '', licenceNumber: '', state: '',
-        district: '', houseName: '', place: '', pin: '',
+        name: '', email: '', phone: '', bloodGroup: '', licenceNumber: '', workingState: '',
+        workingDistrict: '', houseName: '', place: '', pin: '',
+        state: '', district: '',
         stateCode: '', rtoCode: '', stateRtoCode: ''
     });
 
     const [photo, setPhoto] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string>('');
     const [photoError, setPhotoError] = useState<string>('');
-    const [photoInfo, setPhotoInfo] = useState<string>('');
 
     // Cropper state
     const [showCropper, setShowCropper] = useState(false);
@@ -55,7 +57,9 @@ const RegisterPage: React.FC = () => {
     const cropperRef = useRef<Cropper | null>(null);
 
     const [states, setStates] = useState<string[]>([]);
+    const [allStates, setAllStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
+    const [permanentDistricts, setPermanentDistricts] = useState<string[]>([]);
     const [stateCodes, setStateCodes] = useState<StateCodeMapping[]>([]);
     const [errors, setErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -66,6 +70,10 @@ const RegisterPage: React.FC = () => {
             try {
                 const data = await LocationRepository.getStates();
                 setStates(data);
+
+                const allStatesData = await LocationRepository.getAllStates();
+                setAllStates(allStatesData);
+
                 const codes = await LocationRepository.getStateCodes();
                 setStateCodes(codes);
             } catch (err) { console.error(err); }
@@ -98,8 +106,8 @@ const RegisterPage: React.FC = () => {
             const mapping = stateCodes.find(s => s.state === state);
             if (mapping) selectedStateCode = mapping.code;
         }
-        setFormData(prev => ({ ...prev, state, district: '', stateCode: selectedStateCode, rtoCode: '', stateRtoCode: '' }));
-        validateField('state', state);
+        setFormData(prev => ({ ...prev, workingState: state, workingDistrict: '', stateCode: selectedStateCode, rtoCode: '', stateRtoCode: '' }));
+        validateField('workingState', state);
 
         if (state) {
             try {
@@ -107,6 +115,19 @@ const RegisterPage: React.FC = () => {
                 setDistricts(data);
             } catch (error) { console.error(error); }
         } else { setDistricts([]); }
+    };
+
+    const handlePermanentStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const state = e.target.value;
+        setFormData(prev => ({ ...prev, state: state, district: '' }));
+        validateField('state', state);
+
+        if (state) {
+            try {
+                const data = await LocationRepository.getDistricts(state);
+                setPermanentDistricts(data);
+            } catch (error) { console.error(error); }
+        } else { setPermanentDistricts([]); }
     };
 
     const handleRtoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,7 +149,6 @@ const RegisterPage: React.FC = () => {
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         setPhotoError('');
-        setPhotoInfo('');
         setPhotoPreview('');
 
         if (!file) {
@@ -205,7 +225,6 @@ const RegisterPage: React.FC = () => {
                     setPhoto(croppedFile);
                     const previewUrl = URL.createObjectURL(croppedFile);
                     setPhotoPreview(previewUrl);
-                    setPhotoInfo(`✓ Image cropped successfully (${ImageValidator.getFileSizeKB(croppedFile)} KB, 413x413)`);
                     setShowCropper(false);
                     setTempImageSrc('');
                     if (cropperRef.current) {
@@ -320,7 +339,6 @@ const RegisterPage: React.FC = () => {
                                                 onClick={() => {
                                                     setPhoto(null);
                                                     setPhotoPreview('');
-                                                    setPhotoInfo('');
                                                     setPhotoError('');
                                                 }}
                                                 className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md z-10"
@@ -389,18 +407,20 @@ const RegisterPage: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                 <div className="flex flex-col gap-2">
-                                    <select name="state" value={formData.state} onBlur={() => validateField('state', formData.state)} onChange={handleStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.state ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
+                                    <label className="text-sm font-bold text-gray-400">Working State</label>
+                                    <select name="workingState" value={formData.workingState} onBlur={() => validateField('workingState', formData.workingState)} onChange={handleStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.workingState ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
                                         <option value="" className="bg-black">Select State</option>
                                         {states.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
                                     </select>
-                                    <FieldError msg={errors.state} />
+                                    <FieldError msg={errors.workingState} />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <select name="district" value={formData.district} disabled={!formData.state} onBlur={() => validateField('district', formData.district)} onChange={(e) => { setFormData(p => ({ ...p, district: e.target.value })); validateField('district', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.district ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
+                                    <label className="text-sm font-bold text-gray-400">Working District</label>
+                                    <select name="workingDistrict" value={formData.workingDistrict} disabled={!formData.workingState} onBlur={() => validateField('workingDistrict', formData.workingDistrict)} onChange={(e) => { setFormData(p => ({ ...p, workingDistrict: e.target.value })); validateField('workingDistrict', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.workingDistrict ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
                                         <option value="" className="bg-black">Select District</option>
                                         {districts.map(d => <option key={d} value={d} className="bg-black">{d}</option>)}
                                     </select>
-                                    <FieldError msg={errors.district} />
+                                    <FieldError msg={errors.workingDistrict} />
                                 </div>
                             </div>
 
@@ -416,6 +436,28 @@ const RegisterPage: React.FC = () => {
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md space-y-6">
+                            <div className="flex items-center gap-3 mb-2">
+                                <FaMapMarkerAlt className="text-brand text-xl" />
+                                <h3 className="text-xl font-bold">Permanent Address</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-bold text-gray-400">State (as per Address)</label>
+                                    <select name="state" value={formData.state} onBlur={() => validateField('state', formData.state)} onChange={handlePermanentStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.state ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
+                                        <option value="" className="bg-black">Select State</option>
+                                        {allStates.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.state} />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-bold text-gray-400">District (as per Address)</label>
+                                    <select name="district" value={formData.district} disabled={!formData.state} onBlur={() => validateField('district', formData.district)} onChange={(e) => { setFormData(p => ({ ...p, district: e.target.value })); validateField('district', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.district ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
+                                        <option value="" className="bg-black">Select District</option>
+                                        {permanentDistricts.map(d => <option key={d} value={d} className="bg-black">{d}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.district} />
+                                </div>
+                            </div>
                             <Input label="House Name" name="houseName" value={formData.houseName} onChange={handleChange} onBlur={() => validateField('houseName', formData.houseName)} error={errors.houseName} />
                             <div className="grid grid-cols-2 gap-4">
                                 <Input label="Place" name="place" value={formData.place} onChange={handleChange} onBlur={() => validateField('place', formData.place)} error={errors.place} />

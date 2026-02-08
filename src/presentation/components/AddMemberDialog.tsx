@@ -27,10 +27,12 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         phone: '',
         bloodGroup: '',
         licenceNumber: '',
-        state: '',
-        district: '',
+        workingState: '',
+        workingDistrict: '',
         houseName: '',
         place: '',
+        state: '',
+        district: '',
         pin: '',
         stateCode: '',
         rtoCode: '',
@@ -45,7 +47,9 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     const imageRef = useRef<HTMLImageElement>(null);
     const cropperRef = useRef<Cropper | null>(null);
     const [states, setStates] = useState<string[]>([]);
+    const [allStates, setAllStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
+    const [permanentDistricts, setPermanentDistricts] = useState<string[]>([]);
     const [stateCodes, setStateCodes] = useState<{ state: string; code: string }[]>([]);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -55,11 +59,11 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     useEffect(() => {
         if (isOpen) {
             if (user?.role === UserRole.DISTRICT_ADMIN) {
-                const userState = (user as any).state || '';
+                const userState = (user as any).workingState || '';
                 setFormData(prev => ({
                     ...prev,
-                    state: userState,
-                    district: (user as any).district || ''
+                    workingState: userState,
+                    workingDistrict: (user as any).workingDistrict || ''
                 }));
 
                 if (userState) {
@@ -79,12 +83,16 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                 try {
                     const data = await LocationRepository.getStates();
                     setStates(data);
+
+                    const allStatesData = await LocationRepository.getAllStates();
+                    setAllStates(allStatesData);
+
                     try {
                         const codes = await LocationRepository.getStateCodes();
                         setStateCodes(codes);
 
                         if (user?.role === UserRole.DISTRICT_ADMIN) {
-                            const userState = (user as any).state || '';
+                            const userState = (user as any).workingState || '';
                             if (userState) {
                                 const mapping = codes.find(s => s.state === userState);
                                 if (mapping) {
@@ -106,26 +114,23 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         }
     }, [isOpen, user]);
 
-    const handleStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+
+
+    const handlePermanentStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const state = e.target.value;
-        setFormData(prev => ({ ...prev, state, district: '', stateCode: '', rtoCode: '', stateRtoCode: '' }));
+        setFormData(prev => ({ ...prev, state: state, district: '' }));
         if (errors.state) setErrors(prev => ({ ...prev, state: '' }));
+
         if (state) {
             try {
                 const data = await LocationRepository.getDistricts(state);
-                setDistricts(data);
+                setPermanentDistricts(data);
             } catch (error) {
-                console.error('Failed to fetch districts', error);
+                console.error('Failed to fetch permanent districts', error);
             }
         } else {
-            setDistricts([]);
+            setPermanentDistricts([]);
         }
-    };
-
-    const handleStateCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const stateCode = e.target.value;
-        const newStateRtoCode = stateCode && formData.rtoCode ? `${stateCode}-${formData.rtoCode}` : '';
-        setFormData(prev => ({ ...prev, stateCode, stateRtoCode: newStateRtoCode }));
     };
 
     const handleRtoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,10 +184,10 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
             case 'bloodGroup':
                 if (!trimmed) message = 'Blood group is required';
                 break;
-            case 'state':
+            case 'workingState':
                 if (!trimmed) message = 'State is required';
                 break;
-            case 'district':
+            case 'workingDistrict':
                 if (!trimmed) message = 'District is required';
                 break;
             case 'houseName':
@@ -345,8 +350,8 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
         if (!formData.licenceNumber.trim()) newErrors.licenceNumber = 'Licence number is required';
         else if (formData.licenceNumber.trim().length < 5 || formData.licenceNumber.trim().length > 20) newErrors.licenceNumber = 'Licence number must be 5-20 characters';
-        if (!formData.state.trim()) newErrors.state = 'State is required';
-        if (!formData.district.trim()) newErrors.district = 'District is required';
+        if (!formData.workingState.trim()) newErrors.workingState = 'State is required';
+        if (!formData.workingDistrict.trim()) newErrors.workingDistrict = 'District is required';
         if (!formData.houseName.trim()) newErrors.houseName = 'House name is required';
         if (!formData.place.trim()) newErrors.place = 'Place is required';
         if (!formData.pin.trim()) newErrors.pin = 'Pin code is required';
@@ -385,12 +390,14 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                 phone: '',
                 bloodGroup: '',
                 licenceNumber: '',
-                state: user?.role === UserRole.DISTRICT_ADMIN ? (user as any).state : '',
-                district: user?.role === UserRole.DISTRICT_ADMIN ? (user as any).district : '',
+                workingState: user?.role === UserRole.DISTRICT_ADMIN ? (user as any).workingState : '',
+                workingDistrict: user?.role === UserRole.DISTRICT_ADMIN ? (user as any).workingDistrict : '',
                 houseName: '',
                 place: '',
+                state: '',
+                district: '',
                 pin: '',
-                stateCode: user?.role === UserRole.DISTRICT_ADMIN ? (stateCodes.find(s => s.state === (user as any).state)?.code || '') : '',
+                stateCode: user?.role === UserRole.DISTRICT_ADMIN ? (stateCodes.find(s => s.state === (user as any).workingState)?.code || '') : '',
                 rtoCode: '',
                 stateRtoCode: ''
             });
@@ -547,22 +554,22 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                 </div>
                             </section>
 
-                            {/* Address Section */}
+                            {/* Section 2: Working Location & RTO */}
                             <section>
                                 <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
-                                    <FaMapMarkerAlt /> Address & Location
+                                    <FaMapMarkerAlt /> Working Location & RTO
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="flex flex-col gap-1">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">State</label>
-                                        <select disabled className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 text-gray-500 text-sm cursor-not-allowed" value={formData.state}>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Working State</label>
+                                        <select disabled className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 text-gray-500 text-sm cursor-not-allowed" value={formData.workingState}>
                                             <option value="">Select State</option>
                                             {states.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">District</label>
-                                        <select disabled className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 text-gray-500 text-sm cursor-not-allowed" value={formData.district}>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Working District</label>
+                                        <select disabled className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 text-gray-500 text-sm cursor-not-allowed" value={formData.workingDistrict}>
                                             <option value="">Select District</option>
                                             {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                         </select>
@@ -579,10 +586,36 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                             <input value={formData.rtoCode} onChange={handleRtoCodeChange} onBlur={(e) => validateField('rtoCode', e.target.value)} placeholder="01" required maxLength={2} className={`px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-900 text-sm text-center font-bold outline-none focus:ring-2 focus:ring-brand dark:text-white ${errors.rtoCode ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} />
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <label className="text-xs font-bold text-gray-400">State RTO Code</label>
+                                            <label className="text-xs font-bold text-gray-400">System Code</label>
                                             <input readOnly value={formData.stateRtoCode} className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:text-gray-500 text-sm text-center font-bold" />
                                         </div>
                                         {errors.rtoCode && <p className="col-span-3 text-red-500 text-[10px] font-semibold">{errors.rtoCode}</p>}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Section 3: Permanent Address */}
+                            <section>
+                                <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
+                                    <FaMapMarkerAlt /> Permanent Address
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">State <span className="text-red-500">*</span></label>
+                                        <select className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none ${errors.state ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.state} onChange={handlePermanentStateChange} onBlur={(e) => validateField('state', e.target.value)} required>
+                                            <option value="">Select State</option>
+                                            {allStates.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                        {errors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.state}</p>}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">District <span className="text-red-500">*</span></label>
+                                        <select disabled={!formData.state} className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none disabled:opacity-50 ${errors.district ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.district} onChange={(e) => { setFormData({ ...formData, district: e.target.value }); if (errors.district) setErrors(prev => ({ ...prev, district: '' })); }} onBlur={(e) => validateField('district', e.target.value)} required>
+                                            <option value="">Select District</option>
+                                            {permanentDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                        {errors.district && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.district}</p>}
                                     </div>
 
                                     <Input label="House Name / No" name="houseName" value={formData.houseName} onChange={handleChange} onBlur={(e) => validateField('houseName', e.target.value)} required error={errors.houseName} />

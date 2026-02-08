@@ -12,14 +12,19 @@ export interface User {
     createdAt?: string | Date;
     updatedAt?: string | Date;
     photoUrl?: string;
+    state?: string;
+    district?: string;
 }
 
 export interface DistrictAdmin extends User {
-    district: string;
+    workingState: string;
+    workingDistrict: string;
 }
 
 export interface Driver extends User {
     districtAdminId: string;
+    workingState?: string;
+    workingDistrict?: string;
     state?: string;
     district?: string;
     pin?: string;

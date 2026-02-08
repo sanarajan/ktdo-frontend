@@ -145,7 +145,7 @@ export const MemberManagement = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-4">
                 <input
                     type="text"
-                    placeholder="Search by name, email, phone, state, or district..."
+                    placeholder="Search by name, email, phone, state (address), or district (address)..."
                     value={searchTerm}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"

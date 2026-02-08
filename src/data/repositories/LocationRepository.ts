@@ -11,6 +11,11 @@ export const LocationRepository = {
         return allStates.filter((state: string) => TEMP_ALLOWED_STATES.includes(state));
     },
 
+    getAllStates: async (): Promise<string[]> => {
+        const response = await api.get('/locations/states');
+        return response.data.data;
+    },
+
     getStateCodes: async (): Promise<{ state: string; code: string }[]> => {
         const response = await api.get('/locations/state-codes');
         const allCodes = response.data.data;

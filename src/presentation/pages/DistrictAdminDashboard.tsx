@@ -314,7 +314,7 @@ const DistrictAdminDashboard = () => {
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <input
                             type="text"
-                            placeholder="Search by name, email, or phone..."
+                            placeholder="Search by name, email, phone, state (address), or district (address)..."
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
@@ -621,8 +621,8 @@ const DistrictAdminDashboard = () => {
                                                 key={page}
                                                 onClick={() => setCurrentPage(page)}
                                                 className={`px-3 py-2 rounded-lg transition text-xs sm:text-sm ${currentPage === page
-                                                        ? 'bg-brand text-black'
-                                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
+                                                    ? 'bg-brand text-black'
+                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
                                                     }`}
                                             >
                                                 {page}
@@ -664,7 +664,7 @@ const DistrictAdminDashboard = () => {
                     onApprove={viewMember && (viewMember.status === ApprovalStatus.PENDING || viewMember.status === ApprovalStatus.REJECTED) && viewMember.createdBy === 'MEMBER' ? (id) => handleConfirmAction(id, 'APPROVED') : undefined}
                     onReject={viewMember && viewMember.status === ApprovalStatus.PENDING && viewMember.createdBy === 'MEMBER' ? (id) => handleConfirmAction(id, 'REJECTED') : undefined}
                     onPrintId={handlePrintId}
-                    onDelete={(id) => setDeleteDialog({ isOpen: true, member: viewMember })}
+                    onDelete={(_id) => setDeleteDialog({ isOpen: true, member: viewMember })}
                     actionLoading={viewMember ? approvalLoadingId === viewMember._id : false}
                 />
 

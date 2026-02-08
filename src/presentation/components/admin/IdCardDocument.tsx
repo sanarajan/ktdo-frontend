@@ -206,22 +206,22 @@ const IdCardDocument: React.FC<Props> = ({ driver }) => {
               <Text style={styles.value}>+91 {driver.phone || 'N/A'}</Text>
             </View>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>District</Text>
-              <Text style={styles.value}>{driver.district || 'N/A'}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>State</Text>
-              <Text style={styles.value}>{driver.state || 'Kerala'}</Text>
-            </View>
-
-            {/* Address field - Last data item as requested */}
+            {/* Address field - Moved before District and State */}
             <View style={styles.addressRow}>
               <Text style={styles.label}>Address</Text>
               <Text style={styles.addressValue}>
                 {displayAddress || 'N/A'}
               </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}> District</Text>
+              <Text style={styles.value}>{driver.district || 'N/A'}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}> State</Text>
+              <Text style={styles.value}>{driver.state || 'Kerala'}</Text>
             </View>
           </View>
         </View>

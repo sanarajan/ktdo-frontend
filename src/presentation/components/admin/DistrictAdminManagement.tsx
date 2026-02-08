@@ -23,8 +23,8 @@ export const DistrictAdminManagement = () => {
         email: '',
         password: '',
         phone: '',
-        state: '',
-        district: '',
+        workingState: '',
+        workingDistrict: '',
         role: UserRole.DISTRICT_ADMIN
     });
     const [photo, setPhoto] = useState<File | null>(null);
@@ -70,7 +70,7 @@ export const DistrictAdminManagement = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        
+
         if (name === 'phone') {
             const phoneValue = value.replace(/\D/g, '').slice(0, 10);
             setFormData({ ...formData, [name]: phoneValue });
@@ -80,7 +80,7 @@ export const DistrictAdminManagement = () => {
         } else {
             setFormData({ ...formData, [name]: value });
         }
-        
+
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
@@ -108,10 +108,10 @@ export const DistrictAdminManagement = () => {
                 if (!trimmed) message = 'Password is required';
                 else if (trimmed.length < 6) message = 'Password must be at least 6 characters';
                 break;
-            case 'state':
+            case 'workingState':
                 if (!trimmed) message = 'State is required';
                 break;
-            case 'district':
+            case 'workingDistrict':
                 if (!trimmed) message = 'District is required';
                 break;
             default:
@@ -124,8 +124,8 @@ export const DistrictAdminManagement = () => {
 
     const handleStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const state = e.target.value;
-        setFormData({ ...formData, state, district: '' });
-        if (errors.state) setErrors(prev => ({ ...prev, state: '' }));
+        setFormData({ ...formData, workingState: state, workingDistrict: '' });
+        if (errors.workingState) setErrors(prev => ({ ...prev, workingState: '' }));
         if (state) {
             try {
                 const data = await LocationRepository.getDistricts(state);
@@ -138,7 +138,7 @@ export const DistrictAdminManagement = () => {
         }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {       
+    const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Validation Logic
@@ -159,8 +159,8 @@ export const DistrictAdminManagement = () => {
         if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
         else if (!phoneRegex.test(formData.phone.trim())) newErrors.phone = 'Phone number must be exactly 10 digits';
 
-        if (!formData.state.trim()) newErrors.state = 'State is required';
-        if (!formData.district.trim()) newErrors.district = 'District is required';
+        if (!formData.workingState.trim()) newErrors.workingState = 'State is required';
+        if (!formData.workingDistrict.trim()) newErrors.workingDistrict = 'District is required';
 
         if (Object.keys(newErrors).length) {
             setErrors(newErrors);
@@ -170,28 +170,28 @@ export const DistrictAdminManagement = () => {
 
         setIsLoading(true);
         try {
-                const formDataToSend = new FormData();
+            const formDataToSend = new FormData();
 
-        // Append text fields
-        Object.entries(formData).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                formDataToSend.append(key, String(value));
-            }
-        });
+            // Append text fields
+            Object.entries(formData).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formDataToSend.append(key, String(value));
+                }
+            });
             if (photo) {
-               
-                 formDataToSend.append('photo', photo);
+
+                formDataToSend.append('photo', photo);
             }
 
             await AdminRepository.createDistrictAdmin(formDataToSend);
             toast.success(SUCCESS_MESSAGES.DISTRICT_ADMIN_CREATED);
-            setFormData({ name: '', email: '', password: '', phone: '', state: '', district: '', role: UserRole.DISTRICT_ADMIN });
+            setFormData({ name: '', email: '', password: '', phone: '', workingState: '', workingDistrict: '', role: UserRole.DISTRICT_ADMIN });
             setPhoto(null);
             setErrors({});
             fetchAdmins();
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || ERROR_MESSAGES.ADMIN_CREATION_FAILED;
-            
+
             if (errorMessage.toLowerCase().includes('phone')) {
                 setErrors(prev => ({ ...prev, phone: errorMessage }));
                 toast.error(errorMessage);
@@ -241,34 +241,34 @@ export const DistrictAdminManagement = () => {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Create District Admin</h3>
                 <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input 
-                        label="Name" 
+                    <Input
+                        label="Name"
                         name="name"
-                        value={formData.name} 
-                        onChange={handleChange} 
+                        value={formData.name}
+                        onChange={handleChange}
                         onBlur={(e) => validateField('name', e.target.value)}
                         maxLength={50}
-                        required 
+                        required
                         error={errors.name}
                     />
-                    <Input 
-                        label="Email" 
+                    <Input
+                        label="Email"
                         name="email"
-                        type="email" 
-                        value={formData.email} 
-                        onChange={handleChange} 
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
                         onBlur={(e) => validateField('email', e.target.value)}
-                        required 
+                        required
                         error={errors.email}
                     />
-                    <Input 
-                        label="Password" 
+                    <Input
+                        label="Password"
                         name="password"
-                        type="password" 
-                        value={formData.password} 
-                        onChange={handleChange} 
+                        type="password"
+                        value={formData.password}
+                        onChange={handleChange}
                         onBlur={(e) => validateField('password', e.target.value)}
-                        required 
+                        required
                         error={errors.password}
                     />
                     <div className="flex flex-col gap-1">
@@ -282,22 +282,20 @@ export const DistrictAdminManagement = () => {
                             type="tel"
                             inputMode="numeric"
                             maxLength={10}
-                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-800 dark:text-white ${
-                                errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-700'
-                            }`}
+                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-800 dark:text-white ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-700'
+                                }`}
                         />
                         {errors.phone && <span className="text-xs text-red-500 ml-1">{errors.phone}</span>}
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">State</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Working State</label>
                         <select
-                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                errors.state ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            value={formData.state}
+                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.workingState ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                                }`}
+                            value={formData.workingState}
                             onChange={handleStateChange}
-                            onBlur={(e) => validateField('state', e.target.value)}
+                            onBlur={(e) => validateField('workingState', e.target.value)}
                             required
                         >
                             <option value="">Select State</option>
@@ -305,23 +303,22 @@ export const DistrictAdminManagement = () => {
                                 <option key={state} value={state}>{state}</option>
                             ))}
                         </select>
-                        {errors.state && <span className="text-xs text-red-500 ml-1">{errors.state}</span>}
+                        {errors.workingState && <span className="text-xs text-red-500 ml-1">{errors.workingState}</span>}
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">District</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Working District</label>
                         <select
-                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                errors.district ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            value={formData.district}
+                            className={`px-4 py-2 rounded-lg border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.workingDistrict ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                                }`}
+                            value={formData.workingDistrict}
                             onChange={(e) => {
-                                setFormData({ ...formData, district: e.target.value });
-                                if (errors.district) setErrors(prev => ({ ...prev, district: '' }));
+                                setFormData({ ...formData, workingDistrict: e.target.value });
+                                if (errors.workingDistrict) setErrors(prev => ({ ...prev, workingDistrict: '' }));
                             }}
-                            onBlur={(e) => validateField('district', e.target.value)}
+                            onBlur={(e) => validateField('workingDistrict', e.target.value)}
                             required
-                            disabled={!formData.state}
+                            disabled={!formData.workingState}
                         >
                             <option value="">Select District</option>
                             {districts.map(district => (
@@ -348,12 +345,12 @@ export const DistrictAdminManagement = () => {
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white">Existing District Admins</h3>
-                
+
                 {/* Search Field */}
                 <div className="mb-6">
                     <Input
                         type="text"
-                        placeholder="Search by name, email, phone, state, or district..."
+                        placeholder="Search by name, email, phone, working state, or working district..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full max-w-md"
@@ -364,11 +361,11 @@ export const DistrictAdminManagement = () => {
                     <table className="w-full text-left">
                         <thead className="bg-brand text-black border-b border-brand-600">
                             <tr>
-                             <th className="p-4 text-sm font-medium text-black">Photo</th>
+                                <th className="p-4 text-sm font-medium text-black">Photo</th>
                                 <th className="p-4 text-sm font-medium text-black">Name</th>
                                 <th className="p-4 text-sm font-medium text-black">Email</th>
-                                <th className="p-4 text-sm font-medium text-black">State</th>
-                                <th className="p-4 text-sm font-medium text-black">District</th>
+                                <th className="p-4 text-sm font-medium text-black">Working State</th>
+                                <th className="p-4 text-sm font-medium text-black">Working District</th>
                                 <th className="p-4 text-sm font-medium text-black">Status</th>
                                 <th className="p-4 text-sm font-medium text-black">Actions</th>
                             </tr>
@@ -381,16 +378,16 @@ export const DistrictAdminManagement = () => {
                                     admin.name?.toLowerCase().includes(search) ||
                                     admin.email?.toLowerCase().includes(search) ||
                                     admin.phone?.toLowerCase().includes(search) ||
-                                    admin.state?.toLowerCase().includes(search) ||
-                                    admin.district?.toLowerCase().includes(search)
+                                    admin.workingState?.toLowerCase().includes(search) ||
+                                    admin.workingDistrict?.toLowerCase().includes(search)
                                 );
                             }).map((admin: any) => (
                                 <tr key={admin._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                                     <td className="p-4 font-medium text-gray-800 dark:text-gray-200"><img src={admin.photoUrl||noImage} alt="Admin Photo" className="w-10 h-10 rounded-full object-cover" /></td>
+                                    <td className="p-4 font-medium text-gray-800 dark:text-gray-200"><img src={admin.photoUrl || noImage} alt="Admin Photo" className="w-10 h-10 rounded-full object-cover" /></td>
                                     <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{admin.name}</td>
                                     <td className="p-4 text-gray-600 dark:text-gray-400">{admin.email}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-400">{admin.state || 'N/A'}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-400">{admin.district || 'N/A'}</td>
+                                    <td className="p-4 text-gray-600 dark:text-gray-400">{admin.workingState || 'N/A'}</td>
+                                    <td className="p-4 text-gray-600 dark:text-gray-400">{admin.workingDistrict || 'N/A'}</td>
                                     <td className="p-4 text-sm">
                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${admin.isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                                             {admin.isBlocked ? 'Blocked' : 'Active'}

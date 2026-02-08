@@ -223,7 +223,7 @@ const ContactPage = () => {
             <footer className="bg-gray-900 border-t border-gray-800 mt-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center text-gray-400">
-                        <p>&copy; {new Date().getFullYear()} Kerala Taxi Driver's Organization (KTDO). All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} Karuna Taxi Driver's Organization (KTDO). All rights reserved.</p>
                     </div>
                 </div>
             </footer>

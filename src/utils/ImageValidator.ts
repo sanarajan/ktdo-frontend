@@ -1,9 +1,10 @@
 /**
  * Image validation utility for frontend
- * Validates member photo requirements:
+ * Validates passport photo requirements:
  * - Type: JPG, JPEG, PNG only
- * - Size: 15 KB - 2 MB
- * - Dimensions: Square (1:1 aspect ratio)
+ * - Size: 10 KB - 300 KB
+ * - Dimensions: Portrait orientation (height > width)
+ * - Aspect ratio: Suitable for passport photos
  */
 
 interface ValidationResult {

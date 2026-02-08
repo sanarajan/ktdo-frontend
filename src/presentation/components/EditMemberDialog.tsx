@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { FaTimes, FaCamera, FaUserEdit, FaMapMarkerAlt, FaIdCard, FaTint, FaInfoCircle, FaCrop, FaCheck } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCheck, FaTimes, FaCamera, FaCrop, FaUserEdit, FaInfoCircle } from 'react-icons/fa';
 import { Input } from './Input';
 import { Button } from './Button';
 import { toast } from 'react-toastify';
@@ -31,6 +31,8 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
         place: '',
         state: '',
         district: '',
+        workingState: '',
+        workingDistrict: '',
         pin: '',
         stateCode: '',
         rtoCode: '',
@@ -44,8 +46,10 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
     const [isPhotoDeleted, setIsPhotoDeleted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [states, setStates] = useState<string[]>([]);
+    const [allStates, setAllStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
-    const [stateCodes, setStateCodes] = useState<{ state: string; code: string }[]>([]);
+    const [permanentDistricts, setPermanentDistricts] = useState<string[]>([]);
+
     const [preview, setPreview] = useState<string | null>(null);
     const [originalPhotoUrl, setOriginalPhotoUrl] = useState<string | null>(null);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -61,12 +65,9 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             try {
                 const data = await LocationRepository.getStates();
                 setStates(data);
-                try {
-                    const codes = await LocationRepository.getStateCodes();
-                    setStateCodes(codes);
-                } catch (err) {
-                    console.error('Failed to fetch state codes', err);
-                }
+
+                const allStatesData = await LocationRepository.getAllStates();
+                setAllStates(allStatesData);
             } catch (error) {
                 console.error('Failed to fetch states', error);
             }
@@ -94,8 +95,10 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                 phone: member.phone || '',
                 houseName: (member as any).houseName || '',
                 place: (member as any).place || '',
-                state: member.state || '',
-                district: member.district || '',
+                workingState: (member as any).workingState || '',
+                workingDistrict: (member as any).workingDistrict || '',
+                state: (member as any).state || '',
+                district: (member as any).district || '',
                 stateCode: parsedStateCode,
                 rtoCode: parsedRtoCode,
                 stateRtoCode: stateRtoCode || (parsedStateCode && parsedRtoCode ? `${parsedStateCode}-${parsedRtoCode}` : ''),
@@ -103,6 +106,20 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                 bloodGroup: member.bloodGroup || '',
                 licenceNumber: (member as any).licenceNumber || ''
             });
+
+            // Fetch permanent districts if state exists
+            const permanentState = (member as any).state;
+            if (permanentState) {
+                const fetchPermanentDistricts = async () => {
+                    try {
+                        const data = await LocationRepository.getDistricts(permanentState);
+                        setPermanentDistricts(data);
+                    } catch (error) {
+                        console.error('Failed to fetch permanent districts', error);
+                    }
+                };
+                fetchPermanentDistricts();
+            }
             const memberPhoto = member.photoUrl || noImage;
             setOriginalPhotoUrl(memberPhoto);
             setPreview(memberPhoto);
@@ -111,8 +128,8 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             setPhotoError('');
             setPhotoInfo('');
             setErrors({});
-            if (member.state) {
-                fetchDistricts(member.state);
+            if ((member as any).workingState) {
+                fetchDistricts((member as any).workingState);
             }
         }
     }, [member]);
@@ -216,21 +233,23 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
         }
     };
 
-    const handleStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const state = e.target.value;
-        setFormData(prev => ({ ...prev, state, district: '', stateCode: '', rtoCode: '', stateRtoCode: '' }));
-        if (errors.state) setErrors(prev => ({ ...prev, state: '' }));
-        if (state) {
-            await fetchDistricts(state);
-        } else {
-            setDistricts([]);
-        }
-    };
 
-    const handleStateCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const stateCode = e.target.value;
-        const newStateRtoCode = stateCode && formData.rtoCode ? `${stateCode}-${formData.rtoCode}` : '';
-        setFormData(prev => ({ ...prev, stateCode, stateRtoCode: newStateRtoCode }));
+
+    const handlePermanentStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const state = e.target.value;
+        setFormData(prev => ({ ...prev, state: state, district: '' }));
+        if (errors.state) setErrors(prev => ({ ...prev, state: '' }));
+
+        if (state) {
+            try {
+                const data = await LocationRepository.getDistricts(state);
+                setPermanentDistricts(data);
+            } catch (error) {
+                console.error('Failed to fetch permanent districts', error);
+            }
+        } else {
+            setPermanentDistricts([]);
+        }
     };
 
     const handleRtoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -282,10 +301,10 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             case 'bloodGroup':
                 if (!trimmed) message = 'Blood group is required';
                 break;
-            case 'state':
+            case 'workingState':
                 if (!trimmed) message = 'State is required';
                 break;
-            case 'district':
+            case 'workingDistrict':
                 if (!trimmed) message = 'District is required';
                 break;
             case 'houseName':
@@ -297,6 +316,12 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             case 'pin':
                 if (!trimmed) message = 'Pin code is required';
                 else if (!pinRegex.test(trimmed)) message = 'Pin code must be exactly 6 digits';
+                break;
+            case 'state':
+                if (!trimmed) message = 'State is required';
+                break;
+            case 'district':
+                if (!trimmed) message = 'District is required';
                 break;
             case 'rtoCode':
                 if (!trimmed) message = 'RTO code is required';
@@ -354,8 +379,8 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
         else if (!emailRegex.test(formData.email.trim())) newErrors.email = 'Invalid email format';
         if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
         else if (!phoneRegex.test(formData.phone.trim())) newErrors.phone = 'Phone number must be exactly 10 digits';
-        if (!formData.state.trim()) newErrors.state = 'State is required';
-        if (!formData.district.trim()) newErrors.district = 'District is required';
+        if (!formData.workingState.trim()) newErrors.workingState = 'State is required';
+        if (!formData.workingDistrict.trim()) newErrors.workingDistrict = 'District is required';
 
         if (member.role === UserRole.MEMBER) {
             if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
@@ -367,6 +392,8 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             else if (formData.pin && !pinRegex.test(formData.pin.trim())) newErrors.pin = 'Pin code must be exactly 6 digits';
             if (formData.rtoCode && !formData.rtoCode.trim()) newErrors.rtoCode = 'RTO code is required';
             else if (formData.rtoCode && !rtoRegex.test(formData.rtoCode.trim())) newErrors.rtoCode = 'RTO code must be numeric (1-2 digits)';
+            if (!formData.state) newErrors.state = 'State is required';
+            if (!formData.district) newErrors.district = 'District is required';
         }
 
         if (Object.keys(newErrors).length) {
@@ -557,53 +584,98 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                     </div>
                                 </div>
 
-                                {/* Section 2: Regional/Location */}
+                                {/* Section 2: Working Location & RTO */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-2 text-brand">
                                         <FaMapMarkerAlt size={14} />
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest">Regional Information</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest">Working Location & RTO</h3>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800/20 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="flex flex-col gap-1.5 opacity-60">
-                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">State</label>
-                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.state} disabled>
+                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Working State</label>
+                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.workingState} disabled>
                                                 {states.map(state => <option key={state} value={state}>{state}</option>)}
                                             </select>
                                         </div>
                                         <div className="flex flex-col gap-1.5 opacity-60">
-                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">District</label>
-                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.district} disabled>
+                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Working District</label>
+                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.workingDistrict} disabled>
                                                 {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                             </select>
                                         </div>
 
                                         {member.role === UserRole.MEMBER && (
+                                            <div className="md:col-span-2 grid grid-cols-3 gap-4 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">State Code</p>
+                                                    <p className="font-mono font-bold text-brand">{formData.stateCode || '—'}</p>
+                                                </div>
+                                                <div className="space-y-1 border-x border-gray-100 dark:border-gray-800 px-4">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">RTO Code</p>
+                                                    <input
+                                                        type="text"
+                                                        value={formData.rtoCode}
+                                                        onChange={handleRtoCodeChange}
+                                                        maxLength={2}
+                                                        className="w-full bg-transparent font-bold outline-none text-gray-800 dark:text-white"
+                                                        placeholder="01"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1 pl-4">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">System Code</p>
+                                                    <p className="font-mono font-bold text-gray-800 dark:text-white">{formData.stateRtoCode || '—'}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Section 3: Permanent Address */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 text-brand">
+                                        <FaMapMarkerAlt size={14} />
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest">Permanent Address</h3>
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-gray-800/20 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {member.role === UserRole.MEMBER && (
                                             <>
-                                                <div className="md:col-span-2 grid grid-cols-3 gap-4 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                                                    <div className="space-y-1">
-                                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">State Code</p>
-                                                        <p className="font-mono font-bold text-brand">{formData.stateCode || '—'}</p>
-                                                    </div>
-                                                    <div className="space-y-1 border-x border-gray-100 dark:border-gray-800 px-4">
-                                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">RTO Code</p>
-                                                        <input
-                                                            type="text"
-                                                            value={formData.rtoCode}
-                                                            onChange={handleRtoCodeChange}
-                                                            maxLength={2}
-                                                            className="w-full bg-transparent font-bold outline-none text-gray-800 dark:text-white"
-                                                            placeholder="01"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1 pl-4">
-                                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">System Code</p>
-                                                        <p className="font-mono font-bold text-gray-800 dark:text-white">{formData.stateRtoCode || '—'}</p>
-                                                    </div>
+                                                <div className="flex flex-col gap-1.5 px-1">
+                                                    <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">State</label>
+                                                    <select
+                                                        className={`px-5 py-3.5 rounded-2xl border bg-white dark:bg-gray-800 dark:text-white appearance-none transition-all outline-none focus:ring-4 focus:ring-brand/10 ${errors.state ? 'border-red-500' : 'border-gray-100 dark:border-gray-700 focus:border-brand'}`}
+                                                        value={formData.state}
+                                                        onChange={handlePermanentStateChange}
+                                                        onBlur={(e) => validateField('state', e.target.value)}
+                                                        required
+                                                    >
+                                                        <option value="">Select State</option>
+                                                        {allStates.map(state => <option key={state} value={state}>{state}</option>)}
+                                                    </select>
                                                 </div>
 
-                                                <Input label="House / Door No" name="houseName" value={formData.houseName} onChange={handleChange} required error={errors.houseName} />
-                                                <Input label="Local Place" name="place" value={formData.place} onChange={handleChange} required error={errors.place} />
-                                                <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} maxLength={6} required error={errors.pin} />
+                                                <div className="flex flex-col gap-1.5 px-1">
+                                                    <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">District</label>
+                                                    <select
+                                                        disabled={!formData.state}
+                                                        className={`px-5 py-3.5 rounded-2xl border bg-white dark:bg-gray-800 dark:text-white appearance-none transition-all outline-none focus:ring-4 focus:ring-brand/10 disabled:opacity-50 ${errors.district ? 'border-red-500' : 'border-gray-100 dark:border-gray-700 focus:border-brand'}`}
+                                                        value={formData.district}
+                                                        onChange={(e) => {
+                                                            setFormData({ ...formData, district: e.target.value });
+                                                            if (errors.district) setErrors(prev => ({ ...prev, district: '' }));
+                                                        }}
+                                                        onBlur={(e) => validateField('district', e.target.value)}
+                                                        required
+                                                    >
+                                                        <option value="">Select District</option>
+                                                        {permanentDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                                                    </select>
+                                                </div>
+
+                                                <Input label="House Name / No" name="houseName" value={formData.houseName} onChange={handleChange} required error={errors.houseName} />
+                                                <Input label="Place" name="place" value={formData.place} onChange={handleChange} required error={errors.place} />
+                                                <div className="md:col-span-2">
+                                                    <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} maxLength={6} required error={errors.pin} />
+                                                </div>
                                             </>
                                         )}
                                     </div>
