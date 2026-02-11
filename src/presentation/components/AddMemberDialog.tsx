@@ -47,7 +47,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     const imageRef = useRef<HTMLImageElement>(null);
     const cropperRef = useRef<Cropper | null>(null);
     const [states, setStates] = useState<string[]>([]);
-    const [allStates, setAllStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
     const [permanentDistricts, setPermanentDistricts] = useState<string[]>([]);
     const [stateCodes, setStateCodes] = useState<{ state: string; code: string }[]>([]);
@@ -83,9 +82,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                 try {
                     const data = await LocationRepository.getStates();
                     setStates(data);
-
-                    const allStatesData = await LocationRepository.getAllStates();
-                    setAllStates(allStatesData);
 
                     try {
                         const codes = await LocationRepository.getStateCodes();
@@ -604,7 +600,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">State <span className="text-red-500">*</span></label>
                                         <select className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none ${errors.state ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.state} onChange={handlePermanentStateChange} onBlur={(e) => validateField('state', e.target.value)} required>
                                             <option value="">Select State</option>
-                                            {allStates.map(s => <option key={s} value={s}>{s}</option>)}
+                                            {states.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                         {errors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.state}</p>}
                                     </div>

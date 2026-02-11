@@ -57,7 +57,6 @@ const RegisterPage: React.FC = () => {
     const cropperRef = useRef<Cropper | null>(null);
 
     const [states, setStates] = useState<string[]>([]);
-    const [allStates, setAllStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
     const [permanentDistricts, setPermanentDistricts] = useState<string[]>([]);
     const [stateCodes, setStateCodes] = useState<StateCodeMapping[]>([]);
@@ -70,9 +69,6 @@ const RegisterPage: React.FC = () => {
             try {
                 const data = await LocationRepository.getStates();
                 setStates(data);
-
-                const allStatesData = await LocationRepository.getAllStates();
-                setAllStates(allStatesData);
 
                 const codes = await LocationRepository.getStateCodes();
                 setStateCodes(codes);
@@ -445,7 +441,7 @@ const RegisterPage: React.FC = () => {
                                     <label className="text-sm font-bold text-gray-400">State (as per Address)</label>
                                     <select name="state" value={formData.state} onBlur={() => validateField('state', formData.state)} onChange={handlePermanentStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.state ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
                                         <option value="" className="bg-black">Select State</option>
-                                        {allStates.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
+                                        {states.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
                                     </select>
                                     <FieldError msg={errors.state} />
                                 </div>

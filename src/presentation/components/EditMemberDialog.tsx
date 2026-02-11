@@ -46,7 +46,6 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
     const [isPhotoDeleted, setIsPhotoDeleted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [states, setStates] = useState<string[]>([]);
-    const [allStates, setAllStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
     const [permanentDistricts, setPermanentDistricts] = useState<string[]>([]);
 
@@ -65,9 +64,6 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             try {
                 const data = await LocationRepository.getStates();
                 setStates(data);
-
-                const allStatesData = await LocationRepository.getAllStates();
-                setAllStates(allStatesData);
             } catch (error) {
                 console.error('Failed to fetch states', error);
             }
@@ -649,7 +645,7 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                                         required
                                                     >
                                                         <option value="">Select State</option>
-                                                        {allStates.map(state => <option key={state} value={state}>{state}</option>)}
+                                                        {states.map(state => <option key={state} value={state}>{state}</option>)}
                                                     </select>
                                                 </div>
 
