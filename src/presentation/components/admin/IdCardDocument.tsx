@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     // marginTop: 1,
-    minHeight: 16, // Tightest height for address to clear signature
   },
   label: {
     fontSize: 7,
@@ -132,7 +131,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     flex: 1,
     textAlign: 'left',
-    lineHeight: 1,
   }
 });
 
@@ -207,20 +205,32 @@ const IdCardDocument: React.FC<Props> = ({ driver }) => {
             </View>
 
             {/* Address field - Moved before District and State */}
-            <View style={styles.addressRow}>
+            <View style={[
+              styles.addressRow,
+              displayAddress.length > 80 ? { minHeight: 16, marginBottom: 0 } :
+                displayAddress.length > 40 ? { minHeight: 12, marginBottom: 1 } :
+                  { marginBottom: 1 }
+            ]}>
               <Text style={styles.label}>Address</Text>
-              <Text style={styles.addressValue}>
+              <Text style={[
+                styles.addressValue,
+                { lineHeight: displayAddress.length > 40 ? 1 : 1.2 }
+              ]}>
                 {displayAddress || 'N/A'}
               </Text>
             </View>
 
             <View style={styles.infoRow}>
-              <Text style={styles.label}> District</Text>
+              <Text style={styles.label}>District</Text>
               <Text style={styles.value}>{driver.district || 'N/A'}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>RTO Code</Text>
+              <Text style={styles.value}>{driver.stateRtoCode || 'N/A'}</Text>
             </View>
 
             <View style={styles.infoRow}>
-              <Text style={styles.label}> State</Text>
+              <Text style={styles.label}>State</Text>
               <Text style={styles.value}>{driver.state || 'Kerala'}</Text>
             </View>
           </View>

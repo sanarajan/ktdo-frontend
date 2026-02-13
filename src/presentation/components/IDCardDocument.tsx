@@ -4,8 +4,7 @@ import {
   Text,
   View,
   Image,
-  StyleSheet,
-  Font
+  StyleSheet
 } from "@react-pdf/renderer";
 import type { Driver } from "../../common/types";
 
@@ -212,11 +211,15 @@ const IDCardDocument = ({ driver }: IDCardProps) => {
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}> District</Text>
+                <Text style={styles.detailLabel}>District</Text>
                 <Text style={styles.detailValue}>{driver.district || "N/A"}</Text>
               </View>
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}> State</Text>
+                <Text style={styles.detailLabel}>RTO Code</Text>
+                <Text style={styles.detailValue}>{driver.stateRtoCode || "N/A"}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>State</Text>
                 <Text style={styles.detailValue}>{driver.state || "N/A"}</Text>
               </View>
             </View>

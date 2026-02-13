@@ -550,11 +550,42 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                 </div>
                             </section>
 
+                            {/* Section 3: Permanent Address */}
+                            <section>
+                                <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
+                                    <FaMapMarkerAlt /> Permanent Address
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">State <span className="text-red-500">*</span></label>
+                                        <select className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none ${errors.state ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.state} onChange={handlePermanentStateChange} onBlur={(e) => validateField('state', e.target.value)} required>
+                                            <option value="">Select State</option>
+                                            {states.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                        {errors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.state}</p>}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">District <span className="text-red-500">*</span></label>
+                                        <select disabled={!formData.state} className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none disabled:opacity-50 ${errors.district ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.district} onChange={(e) => { setFormData({ ...formData, district: e.target.value }); if (errors.district) setErrors(prev => ({ ...prev, district: '' })); }} onBlur={(e) => validateField('district', e.target.value)} required>
+                                            <option value="">Select District</option>
+                                            {permanentDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                        {errors.district && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.district}</p>}
+                                    </div>
+
+                                    <Input label="House Name / No" name="houseName" value={formData.houseName} onChange={handleChange} onBlur={(e) => validateField('houseName', e.target.value)} required error={errors.houseName} />
+                                    <Input label="Place" name="place" value={formData.place} onChange={handleChange} onBlur={(e) => validateField('place', e.target.value)} required error={errors.place} />
+                                    <div className="md:col-span-2">
+                                        <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} onBlur={(e) => validateField('pin', e.target.value)} maxLength={6} required error={errors.pin} />
+                                    </div>
+                                </div>
+                            </section>
+
                             {/* Section 2: Working Location & RTO */}
                             <section>
                                 <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
-                                    <FaMapMarkerAlt /> Working Location & RTO
-                                </h3>
+                                    <FaMapMarkerAlt /> Admin Approval                                </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="flex flex-col gap-1">
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Working State</label>
@@ -586,38 +617,6 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
                                             <input readOnly value={formData.stateRtoCode} className="px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:text-gray-500 text-sm text-center font-bold" />
                                         </div>
                                         {errors.rtoCode && <p className="col-span-3 text-red-500 text-[10px] font-semibold">{errors.rtoCode}</p>}
-                                    </div>
-                                </div>
-                            </section>
-
-                            {/* Section 3: Permanent Address */}
-                            <section>
-                                <h3 className="text-[11px] font-black text-brand uppercase tracking-[2px] mb-4 flex items-center gap-2">
-                                    <FaMapMarkerAlt /> Permanent Address
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">State <span className="text-red-500">*</span></label>
-                                        <select className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none ${errors.state ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.state} onChange={handlePermanentStateChange} onBlur={(e) => validateField('state', e.target.value)} required>
-                                            <option value="">Select State</option>
-                                            {states.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                        {errors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.state}</p>}
-                                    </div>
-
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">District <span className="text-red-500">*</span></label>
-                                        <select disabled={!formData.state} className={`px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-brand bg-white dark:bg-gray-900 text-sm dark:text-white transition-all outline-none disabled:opacity-50 ${errors.district ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`} value={formData.district} onChange={(e) => { setFormData({ ...formData, district: e.target.value }); if (errors.district) setErrors(prev => ({ ...prev, district: '' })); }} onBlur={(e) => validateField('district', e.target.value)} required>
-                                            <option value="">Select District</option>
-                                            {permanentDistricts.map(d => <option key={d} value={d}>{d}</option>)}
-                                        </select>
-                                        {errors.district && <p className="text-red-500 text-[10px] mt-1 font-semibold ml-1">{errors.district}</p>}
-                                    </div>
-
-                                    <Input label="House Name / No" name="houseName" value={formData.houseName} onChange={handleChange} onBlur={(e) => validateField('houseName', e.target.value)} required error={errors.houseName} />
-                                    <Input label="Place" name="place" value={formData.place} onChange={handleChange} onBlur={(e) => validateField('place', e.target.value)} required error={errors.place} />
-                                    <div className="md:col-span-2">
-                                        <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} onBlur={(e) => validateField('pin', e.target.value)} maxLength={6} required error={errors.pin} />
                                     </div>
                                 </div>
                             </section>

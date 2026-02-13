@@ -580,52 +580,6 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                     </div>
                                 </div>
 
-                                {/* Section 2: Working Location & RTO */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-2 text-brand">
-                                        <FaMapMarkerAlt size={14} />
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest">Working Location & RTO</h3>
-                                    </div>
-                                    <div className="bg-gray-50 dark:bg-gray-800/20 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="flex flex-col gap-1.5 opacity-60">
-                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Working State</label>
-                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.workingState} disabled>
-                                                {states.map(state => <option key={state} value={state}>{state}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="flex flex-col gap-1.5 opacity-60">
-                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Working District</label>
-                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.workingDistrict} disabled>
-                                                {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                                            </select>
-                                        </div>
-
-                                        {member.role === UserRole.MEMBER && (
-                                            <div className="md:col-span-2 grid grid-cols-3 gap-4 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                                                <div className="space-y-1">
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">State Code</p>
-                                                    <p className="font-mono font-bold text-brand">{formData.stateCode || '—'}</p>
-                                                </div>
-                                                <div className="space-y-1 border-x border-gray-100 dark:border-gray-800 px-4">
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">RTO Code</p>
-                                                    <input
-                                                        type="text"
-                                                        value={formData.rtoCode}
-                                                        onChange={handleRtoCodeChange}
-                                                        maxLength={2}
-                                                        className="w-full bg-transparent font-bold outline-none text-gray-800 dark:text-white"
-                                                        placeholder="01"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1 pl-4">
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">System Code</p>
-                                                    <p className="font-mono font-bold text-gray-800 dark:text-white">{formData.stateRtoCode || '—'}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
                                 {/* Section 3: Permanent Address */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-2 text-brand">
@@ -673,6 +627,52 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
                                                     <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} maxLength={6} required error={errors.pin} />
                                                 </div>
                                             </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Section 2: Working Location & RTO */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 text-brand">
+                                        <FaMapMarkerAlt size={14} />
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest">Admin Approval</h3>
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-gray-800/20 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="flex flex-col gap-1.5 opacity-60">
+                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Working State</label>
+                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.workingState} disabled>
+                                                {states.map(state => <option key={state} value={state}>{state}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="flex flex-col gap-1.5 opacity-60">
+                                            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Working District</label>
+                                            <select className="px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed" value={formData.workingDistrict} disabled>
+                                                {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                                            </select>
+                                        </div>
+
+                                        {member.role === UserRole.MEMBER && (
+                                            <div className="md:col-span-2 grid grid-cols-3 gap-4 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">State Code</p>
+                                                    <p className="font-mono font-bold text-brand">{formData.stateCode || '—'}</p>
+                                                </div>
+                                                <div className="space-y-1 border-x border-gray-100 dark:border-gray-800 px-4">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">RTO Code</p>
+                                                    <input
+                                                        type="text"
+                                                        value={formData.rtoCode}
+                                                        onChange={handleRtoCodeChange}
+                                                        maxLength={2}
+                                                        className="w-full bg-transparent font-bold outline-none text-gray-800 dark:text-white"
+                                                        placeholder="01"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1 pl-4">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">System Code</p>
+                                                    <p className="font-mono font-bold text-gray-800 dark:text-white">{formData.stateRtoCode || '—'}</p>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

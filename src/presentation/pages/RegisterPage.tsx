@@ -396,41 +396,6 @@ const RegisterPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
-                            <div className="flex items-center gap-3 mb-8">
-                                <FaMapMarkerAlt className="text-brand text-xl" />
-                                <h3 className="text-xl font-bold">Location & RTO</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-400">Working State</label>
-                                    <select name="workingState" value={formData.workingState} onBlur={() => validateField('workingState', formData.workingState)} onChange={handleStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.workingState ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
-                                        <option value="" className="bg-black">Select State</option>
-                                        {states.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
-                                    </select>
-                                    <FieldError msg={errors.workingState} />
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-400">Working District</label>
-                                    <select name="workingDistrict" value={formData.workingDistrict} disabled={!formData.workingState} onBlur={() => validateField('workingDistrict', formData.workingDistrict)} onChange={(e) => { setFormData(p => ({ ...p, workingDistrict: e.target.value })); validateField('workingDistrict', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.workingDistrict ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
-                                        <option value="" className="bg-black">Select District</option>
-                                        {districts.map(d => <option key={d} value={d} className="bg-black">{d}</option>)}
-                                    </select>
-                                    <FieldError msg={errors.workingDistrict} />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-brand/5 rounded-2xl border border-brand/20">
-                                <div><label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">State Code</label><input readOnly value={formData.stateCode} className="bg-transparent border-none text-brand font-bold" /></div>
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">RTO Code *</label>
-                                    <input type="text" placeholder="e.g. 01" value={formData.rtoCode} onChange={handleRtoCodeChange} onBlur={() => validateField('rtoCode', formData.rtoCode)} maxLength={2} className={`bg-white/10 rounded px-2 py-1 w-full outline-none focus:ring-1 ${errors.rtoCode ? 'ring-1 ring-red-500' : 'focus:ring-brand'}`} />
-                                    <FieldError msg={errors.rtoCode} />
-                                </div>
-                                <div><label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">Reg. Code</label><input readOnly value={formData.stateRtoCode} className="bg-transparent border-none text-white font-bold" /></div>
-                            </div>
-                        </div>
-
                         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md space-y-6">
                             <div className="flex items-center gap-3 mb-2">
                                 <FaMapMarkerAlt className="text-brand text-xl" />
@@ -458,6 +423,41 @@ const RegisterPage: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <Input label="Place" name="place" value={formData.place} onChange={handleChange} onBlur={() => validateField('place', formData.place)} error={errors.place} />
                                 <Input label="Pin Code" name="pin" value={formData.pin} onChange={handleChange} onBlur={() => validateField('pin', formData.pin)} maxLength={6} error={errors.pin} />
+                            </div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
+                            <div className="flex items-center gap-3 mb-8">
+                                <FaMapMarkerAlt className="text-brand text-xl" />
+                                <h3 className="text-xl font-bold">Admin Approval</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-bold text-gray-400">Working State</label>
+                                    <select name="workingState" value={formData.workingState} onBlur={() => validateField('workingState', formData.workingState)} onChange={handleStateChange} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.workingState ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand`}>
+                                        <option value="" className="bg-black">Select State</option>
+                                        {states.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.workingState} />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-bold text-gray-400">Working District</label>
+                                    <select name="workingDistrict" value={formData.workingDistrict} disabled={!formData.state} onBlur={() => validateField('workingDistrict', formData.workingDistrict)} onChange={(e) => { setFormData(p => ({ ...p, workingDistrict: e.target.value })); validateField('workingDistrict', e.target.value); }} className={`px-4 py-3 rounded-xl bg-white/5 border ${errors.workingDistrict ? 'border-red-500' : 'border-white/10'} text-white outline-none focus:ring-2 focus:ring-brand disabled:opacity-30`}>
+                                        <option value="" className="bg-black">Select District</option>
+                                        {districts.map(d => <option key={d} value={d} className="bg-black">{d}</option>)}
+                                    </select>
+                                    <FieldError msg={errors.workingDistrict} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-brand/5 rounded-2xl border border-brand/20">
+                                <div><label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">State Code</label><input readOnly value={formData.stateCode} className="bg-transparent border-none text-brand font-bold" /></div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">RTO Code *</label>
+                                    <input type="text" placeholder="e.g. 01" value={formData.rtoCode} onChange={handleRtoCodeChange} onBlur={() => validateField('rtoCode', formData.rtoCode)} maxLength={2} className={`bg-white/10 rounded px-2 py-1 w-full outline-none focus:ring-1 ${errors.rtoCode ? 'ring-1 ring-red-500' : 'focus:ring-brand'}`} />
+                                    <FieldError msg={errors.rtoCode} />
+                                </div>
+                                <div><label className="text-[10px] font-black text-gray-500 block mb-1 uppercase">Reg. Code</label><input readOnly value={formData.stateRtoCode} className="bg-transparent border-none text-white font-bold" /></div>
                             </div>
                         </div>
 

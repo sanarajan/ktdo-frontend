@@ -134,18 +134,6 @@ export const ViewDetailsDialog = ({ isOpen, onClose, data, title, onApprove, onR
                                     </div>
                                 </div>
 
-                                {/* Section 2: Working Location */}
-                                <div className="space-y-4">
-                                    <SectionHeader icon={<FaMapMarkerAlt />} title="Working Location" />
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                        <InfoBlock label="Working District" value={data.workingDistrict} />
-                                        <InfoBlock label="Working State" value={data.workingState} />
-                                        {data.role === UserRole.MEMBER && (
-                                            <InfoBlock label="RTO Code" value={data.stateRtoCode} />
-                                        )}
-                                    </div>
-                                </div>
-
                                 {/* Section 3: Permanent Address */}
                                 <div className="space-y-4">
                                     <SectionHeader icon={<FaMapMarkerAlt />} title="Permanent Address" />
@@ -162,6 +150,18 @@ export const ViewDetailsDialog = ({ isOpen, onClose, data, title, onApprove, onR
                                         <InfoBlock label="State" value={data.state} />
                                         {data.role === UserRole.MEMBER && (
                                             <InfoBlock label="Pincode" value={data.pin} />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Section 2: Working Location */}
+                                <div className="space-y-4">
+                                    <SectionHeader icon={<FaMapMarkerAlt />} title="Admin Approval" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                        <InfoBlock label="Working District" value={data.workingDistrict} />
+                                        <InfoBlock label="Working State" value={data.workingState} />
+                                        {data.role === UserRole.MEMBER && (
+                                            <InfoBlock label="RTO Code" value={data.stateRtoCode} />
                                         )}
                                     </div>
                                 </div>

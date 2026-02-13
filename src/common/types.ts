@@ -32,6 +32,7 @@ export interface Driver extends User {
     licenceNumber?: string;
     status: ApprovalStatus;
     uniqueId?: string;
+    stateRtoCode?: string;
     photoUrl?: string;
     printCount?: number;
     createdBy?: string;
