@@ -326,6 +326,7 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
+
         e.preventDefault();
 
         const newErrors: { [key: string]: string } = {};
@@ -354,6 +355,13 @@ export const AddMemberDialog: React.FC<AddMemberDialogProps> = ({ isOpen, onClos
         else if (!pinRegex.test(formData.pin.trim())) newErrors.pin = 'Pin code must be exactly 6 digits';
         if (!formData.rtoCode.trim()) newErrors.rtoCode = 'RTO code is required';
         else if (!rtoRegex.test(formData.rtoCode.trim())) newErrors.rtoCode = 'RTO code must be numeric (1-2 digits)';
+
+        // Photo must be selected
+        if (!photo) {
+            setPhotoError('Profile photo is required');
+            toast.error('Profile photo is required');
+            return;
+        }
 
         if (Object.keys(newErrors).length) {
             setErrors(newErrors);

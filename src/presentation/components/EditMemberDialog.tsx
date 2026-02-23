@@ -392,6 +392,14 @@ export const EditMemberDialog = ({ isOpen, onClose, member, onSuccess }: EditMem
             if (!formData.district) newErrors.district = 'District is required';
         }
 
+        // Photo must be present: either a new photo is uploaded, or an existing photo is present and not deleted
+        const hasExistingPhoto = originalPhotoUrl && originalPhotoUrl !== noImage && !isPhotoDeleted;
+        if (!photo && !hasExistingPhoto) {
+            setPhotoError('Profile photo is required');
+            toast.error('Profile photo is required');
+            return;
+        }
+
         if (Object.keys(newErrors).length) {
             setErrors(newErrors);
             toast.error(ERROR_MESSAGES.FORM_ERRORS);

@@ -253,6 +253,12 @@ const RegisterPage: React.FC = () => {
             }
         });
 
+        // Photo must be selected
+        if (!photo) {
+            setPhotoError('Profile photo is required');
+            hasErrors = true;
+        }
+
         setErrors(newErrors);
 
         if (hasErrors) {
