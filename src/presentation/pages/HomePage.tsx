@@ -8,9 +8,9 @@ const HomePage = () => {
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+
     return (
         <div className="min-h-screen bg-[#050505] text-white selection:bg-brand selection:text-black">
-
             {/* Navigation - Ultra Modern Glass Style */}
             <nav className="fixed top-0 w-full z-50 bg-black/60  backdrop-blur-xl border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -37,10 +37,56 @@ const HomePage = () => {
                         </div>
 
                         {/* Mobile Menu Button */}
-                        <button onClick={toggleMenu} className="md:hidden text-brand">
+                        <button 
+                            onClick={toggleMenu}
+                            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-brand transition-all"
+                            aria-label="Toggle menu"
+                        >
                             {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
                         </button>
                     </div>
+
+                    {/* Mobile Menu - Animated Dropdown */}
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="md:hidden border-t border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden"
+                        >
+                            <div className="px-6 py-4 space-y-3">
+                                <Link 
+                                    to="/" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-brand bg-brand/10 border border-brand/20 hover:bg-brand/20 transition-all"
+                                >
+                                    Home
+                                </Link>
+                                <Link 
+                                    to="/about" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-brand hover:bg-white/5 transition-all"
+                                >
+                                    About
+                                </Link>
+                                <Link 
+                                    to="/contact" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-brand hover:bg-white/5 transition-all"
+                                >
+                                    Contact
+                                </Link>
+                                <Link 
+                                    to="/register"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-3 bg-brand text-black rounded-lg text-sm font-bold hover:shadow-[0_0_20px_rgba(255,204,0,0.4)] transition-all text-center"
+                                >
+                                    Register Now
+                                </Link>
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
             </nav>
 
