@@ -14,6 +14,7 @@ import { EditMemberDialog } from '../components/EditMemberDialog';
 import { ConfirmationDialog } from '../components/ConfirmationDialog';
 import { RejectReasonDialog } from '../components/RejectReasonDialog';
 import { ResetPasswordForm } from '../components/ResetPasswordForm';
+import { Pagination } from '../components/Pagination';
 import { toast } from 'react-toastify';
 import { FaSignOutAlt, FaUser, FaPlus, FaChevronDown, FaBars, FaTimes } from 'react-icons/fa';
 import clsx from 'clsx';
@@ -586,63 +587,17 @@ const DistrictAdminDashboard = () => {
 
                     {/* Pagination Controls */}
                     {totalMembers > 0 && (
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
-                                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalMembers)} of {totalMembers} members
-                                </div>
-                                <select
-                                    value={itemsPerPage}
-                                    onChange={(e) => {
-                                        setItemsPerPage(Number(e.target.value));
-                                        setCurrentPage(1);
-                                    }}
-                                    className="text-xs sm:text-sm border-gray-300 rounded-md shadow-sm focus:border-brand focus:ring-brand dark:bg-gray-700 dark:border-gray-600 dark:text-white px-2 py-1"
-                                >
-                                    <option value={10}>10 per page</option>
-                                    <option value={20}>20 per page</option>
-                                    <option value={50}>50 per page</option>
-                                    <option value={100}>100 per page</option>
-                                </select>
-                            </div>
-
-                            {totalPages > 1 && (
-                                <div className="flex gap-2 w-full sm:w-auto justify-center">
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-3 sm:px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-                                    >
-                                        Previous
-                                    </button>
-                                    <div className="hidden sm:flex items-center gap-2">
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                            <button
-                                                key={page}
-                                                onClick={() => setCurrentPage(page)}
-                                                className={`px-3 py-2 rounded-lg transition text-xs sm:text-sm ${currentPage === page
-                                                    ? 'bg-brand text-black'
-                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                                                    }`}
-                                            >
-                                                {page}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {/* Mobile page indicator */}
-                                    <div className="sm:hidden flex items-center px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg text-xs">
-                                        {currentPage} / {totalPages}
-                                    </div>
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3 sm:px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalMembers={totalMembers}
+                            itemsPerPage={itemsPerPage}
+                            onPageChange={setCurrentPage}
+                            onItemsPerPageChange={(limit) => {
+                                setItemsPerPage(limit);
+                                setCurrentPage(1);
+                            }}
+                        />
                     )}
                 </div>
 

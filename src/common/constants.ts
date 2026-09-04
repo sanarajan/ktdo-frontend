@@ -3,3 +3,5 @@ const env = (import.meta as ImportMeta & { env: ImportMetaEnv }).env;
 export const API_BASE_URL = env.VITE_API_URL || 'https://ktdo.duckdns.org/api/';
 
 // export const API_BASE_URL = env.VITE_API_URL || 'http://localhost:3000/api';
+// export const API_BASE_URL =
+//   env.VITE_API_URL || 'http://localhost:8080/api';

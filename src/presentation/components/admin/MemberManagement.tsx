@@ -4,6 +4,7 @@ import { Button } from '../Button';
 import { AddMemberDialog } from '../AddMemberDialog';
 import { ViewDetailsDialog } from '../ViewDetailsDialog';
 import { EditMemberDialog } from '../EditMemberDialog';
+import { Pagination } from '../Pagination';
 import { pdf } from '@react-pdf/renderer';
 import IdCardDocument from './IdCardDocument';
 import { toast } from 'react-toastify';
@@ -296,59 +297,17 @@ export const MemberManagement = () => {
 
                 {/* Pagination Controls */}
                 {!isLoading && totalMembers > 0 && (
-                    <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        <div className="flex items-center gap-4">
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalMembers)} of {totalMembers} members
-                            </div>
-                            <select
-                                value={itemsPerPage}
-                                onChange={(e) => {
-                                    setItemsPerPage(Number(e.target.value));
-                                    setCurrentPage(1);
-                                }}
-                                className="text-sm border-gray-300 rounded-md shadow-sm focus:border-brand focus:ring-brand dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            >
-                                <option value={10}>10 per page</option>
-                                <option value={20}>20 per page</option>
-                                <option value={50}>50 per page</option>
-                                <option value={100}>100 per page</option>
-                            </select>
-                        </div>
-
-                        {totalPages > 1 && (
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Previous
-                                </button>
-                                <div className="flex items-center gap-2">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <button
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`px-3 py-2 rounded-lg transition ${currentPage === page
-                                                ? 'bg-brand text-black'
-                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                                                }`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalMembers={totalMembers}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        onItemsPerPageChange={(limit) => {
+                            setItemsPerPage(limit);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 
