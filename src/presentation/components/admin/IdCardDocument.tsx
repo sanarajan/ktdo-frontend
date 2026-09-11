@@ -2,9 +2,8 @@ import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/render
 import type { Driver } from '../../../common/types';
 import { API_BASE_URL } from '../../../common/constants';
 
-const CARD_BG_IMAGE = "/idcard_background.png";
+const CARD_BG_IMAGE = "/idcard_background.jpg";
 
-// Helper to get full image URL
 const getImageUrl = (url?: string) => {
   if (!url) return 'https://via.placeholder.com/150';
   if (url.startsWith('http') || url.startsWith('data:')) return url;
@@ -12,125 +11,144 @@ const getImageUrl = (url?: string) => {
   return `${serverUrl}/${url.replace(/^\//, '')}`;
 };
 
+const getPrintImageUrl = (url?: string) => {
+  if (!url) return 'https://via.placeholder.com/150';
+  const originalUrl = getImageUrl(url);
+  if (originalUrl.startsWith('data:')) return originalUrl;
+  return `${API_BASE_URL}/admin/print-image-cmyk?url=${encodeURIComponent(originalUrl)}`;
+};
+
+
 // Helper to get dynamic font size for name
 const getNameFontSize = (name: string): number => {
-  if (name.length > 30) {
-    return 8; // Readable bold
-  } else if (name.length > 20) {
-    return 9;
+  if (name.length > 25) {
+    return 7; // Readable bold
+  } else if (name.length > 18) {
+    return 8;
   }
-  return 10;
+  return 9;
 };
+
+// Physical dimensions
+const MM_TO_PT = 72 / 25.4;
+
+const CARD_WIDTH = 54 * MM_TO_PT;
+const CARD_HEIGHT = 86 * MM_TO_PT;
 
 const styles = StyleSheet.create({
   page: {
-    width: 153,
-    height: 241,
-    backgroundColor: '#FFFFFF',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     position: 'relative',
     padding: 0,
+    margin: 0,
     fontFamily: 'Helvetica',
+    backgroundColor: '#FFFFFF'
   },
   fullBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: 153,
-    height: 241,
-    objectFit: 'stretch',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
   },
-  mainLayer: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  photoPositioner: {
-    marginTop: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 70, // Fixed height for photo area
-  },
-  // User's preferred photo style (from latest edit)
   photoWrapper: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5, // Perfect circle (size 65)
+    position: 'absolute',
+    top: 45.25,
+    left: ((CARD_WIDTH - 61.5) / 2) - 0.25,
+    width: 61.5,
+    height: 61.5,
+    borderRadius: 30.75, 
     overflow: 'hidden',
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   photo: {
-    position: 'absolute',
     width: '100%',
     height: '100%',
-    objectFit: 'cover',   // Important: This crops the passport photo to fill the circle
-    borderRadius: 32.5,   // Apply radius to image as well for better compatibility
+    objectFit: 'cover',   
+    borderRadius: 30.75,   
   },
   nameWrapper: {
-    marginTop: 0,
-    width: '100%',
-    height: 22, // Tight height for up to 2 lines
+    position: 'absolute',
+    top: 110,
+    left: 0,
+    width: CARD_WIDTH,
+    height: 14, 
     alignItems: 'center',
     justifyContent: 'center',
   },
   nameText: {
     fontFamily: 'Helvetica-Bold',
-    color: '#000',
+    color: 'cmyk(0,0,0,100)',
     textAlign: 'center',
     textTransform: 'uppercase',
     marginBottom: 0,
     lineHeight: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
   idText: {
-    marginTop: -4,
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
-    color: '#000',
+    position: 'absolute',
+    top: 124,
+    left: 0,
+    width: CARD_WIDTH,
+    fontSize: 7,
+    fontFamily: 'Helvetica',
+    color: 'cmyk(0,0,0,100)',
     textAlign: 'center',
     marginBottom: 0,
-    lineHeight: 0.9,
+    lineHeight: 1,
   },
   infoSection: {
-    width: 130,
-    marginTop: 4, // Tighten gap from ID no
-    paddingHorizontal: 10,
+    position: 'absolute',
+    top: 137,
+    left: (CARD_WIDTH - 133) / 2,
+    width: 133,
+    paddingHorizontal: 9,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 1,
-  },
-  addressRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    // marginTop: 1,
+    marginBottom: 1.2, // Reduced row spacing to compensate for downward shift, preventing seal overlap
   },
   label: {
-    fontSize: 7,
-    color: '#000',
+    fontSize: 6,
+    color: 'cmyk(0,0,0,100)',
     fontFamily: 'Helvetica-Bold',
-    width: 55,
+    width: 48,
     textTransform: 'uppercase',
-    lineHeight: 1.2, // Reduced from 2.0 to fit everything
+    lineHeight: 1.2, 
+  },
+  colon: {
+    fontSize: 6,
+    color: 'cmyk(0,0,0,100)',
+    fontFamily: 'Helvetica-Bold',
+    width: 5,
+    lineHeight: 1.2,
   },
   value: {
-    fontSize: 7,
-    color: '#000',
+    fontSize: 6,
+    color: 'cmyk(0,0,0,100)',
     fontFamily: 'Helvetica',
     flex: 1,
     textAlign: 'left',
-    lineHeight: 1.2, // Reduced from 2.0
+    lineHeight: 1.2, 
+  },
+  addressFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: CARD_WIDTH,
+    height: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
   },
   addressValue: {
-    fontSize: 6,
-    color: '#000',
-    fontFamily: 'Helvetica',
-    flex: 1,
-    textAlign: 'left',
+    fontSize: 5.5,
+    color: '#FFFFFF',
+    fontFamily: 'Helvetica-Bold',
+    textAlign: 'center',
+    lineHeight: 1.2,
   }
 });
 
@@ -140,100 +158,85 @@ interface Props {
 
 const IdCardDocument: React.FC<Props> = ({ driver }) => {
   const rawName = driver.name || 'N/A';
-
-  // No longer truncating name, relying on dynamic font size
   const displayName = rawName;
-
-  // Get dynamic font size based on name length
   const nameFontSize = getNameFontSize(displayName);
 
-  // Prepare address: house (8 + ..), place (full), pin (full)
-  const housePartRaw = (driver.houseName || '').trim();
-  const housePart = housePartRaw.length > 8 ? housePartRaw.substring(0, 8) + '..' : housePartRaw;
-  const placePart = (driver.place || '').trim();
-  const pinPart = (driver.pin || '').trim();
+  // Address - Full concatenation without truncation
+  const houseName = (driver.houseName || '').trim();
+  const placeName = (driver.place || '').trim();
+  const districtName = (driver.district || '').trim();
+  const stateName = (driver.state || '').trim();
+  const pinCode = (driver.pin || '').trim();
 
-  const displayAddress = [housePart, placePart, pinPart].filter(Boolean).join(', ');
+  const displayAddress = [houseName, placeName, districtName, stateName, pinCode]
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <Document>
-      <Page size={[153, 241]} style={styles.page}>
-        {/* Background template image - contains seal and signature */}
+      <Page size={[CARD_WIDTH, CARD_HEIGHT]} style={styles.page}>
         <Image src={CARD_BG_IMAGE} style={styles.fullBackground} />
 
-        <View style={styles.mainLayer}>
+        <View style={styles.photoWrapper}>
+          <Image
+            style={styles.photo}
+            src={{ uri: getPrintImageUrl(driver.photoUrl) }}
+          />
+        </View>
 
-          {/* Photo Section - FIXED POSITION */}
-          <View style={styles.photoPositioner}>
-            <View style={styles.photoWrapper}>
-              <Image
-                style={styles.photo}
-                src={{ uri: getImageUrl(driver.photoUrl) }}
-              />
-            </View>
+        <View style={styles.nameWrapper}>
+          <Text style={[styles.nameText, { fontSize: nameFontSize }]}>
+            {displayName.toUpperCase()}
+          </Text>
+        </View>
+
+        <Text style={styles.idText}>
+          ID: {driver.uniqueId || 'PENDING'}
+        </Text>
+
+        <View style={styles.infoSection}>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>LICENSE NO</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>{(driver as any).licenceNumber || 'N/A'}</Text>
           </View>
 
-          {/* Name Section */}
-          <View style={styles.nameWrapper}>
-            <Text style={[styles.nameText, { fontSize: nameFontSize }]}>
-              {displayName.toUpperCase()}
-            </Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>PHONE</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>{driver.phone || 'N/A'}</Text>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>BLOOD GROUP</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>{driver.bloodGroup || 'N/A'}</Text>
           </View>
 
-          {/* ID Number - Close to name (1pt gap) */}
-          <View style={{ marginTop: 1 }}>
-            <Text style={styles.idText}>
-              ID: {driver.uniqueId || 'PENDING'}
-            </Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>DISTRICT</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>{driver.district || 'N/A'}</Text>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>RTO CODE</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>{driver.stateRtoCode || 'N/A'}</Text>
           </View>
 
-          {/* Member Information - Fixed starting position with more space below ID */}
-          <View style={styles.infoSection}>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Blood Group</Text>
-              <Text style={styles.value}>{driver.bloodGroup || 'N/A'}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>License No</Text>
-              <Text style={styles.value}>{(driver as any).licenceNumber || 'N/A'}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Phone</Text>
-              <Text style={styles.value}>+91 {driver.phone || 'N/A'}</Text>
-            </View>
-
-            {/* Address field - Moved before District and State */}
-            <View style={[
-              styles.addressRow,
-              displayAddress.length > 80 ? { minHeight: 16, marginBottom: 0 } :
-                displayAddress.length > 40 ? { minHeight: 12, marginBottom: 1 } :
-                  { marginBottom: 1 }
-            ]}>
-              <Text style={styles.label}>Address</Text>
-              <Text style={[
-                styles.addressValue,
-                { lineHeight: displayAddress.length > 40 ? 1 : 1.2 }
-              ]}>
-                {displayAddress || 'N/A'}
-              </Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>District</Text>
-              <Text style={styles.value}>{driver.district || 'N/A'}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>RTO Code</Text>
-              <Text style={styles.value}>{driver.stateRtoCode || 'N/A'}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>State</Text>
-              <Text style={styles.value}>{driver.state || 'Kerala'}</Text>
-            </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>STATE</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>{driver.state || 'Kerala'}</Text>
           </View>
+        </View>
+
+        {/* Footer Address */}
+        <View style={styles.addressFooter}>
+          <Text style={styles.addressValue}>
+            {displayAddress || 'N/A'}
+          </Text>
         </View>
       </Page>
     </Document>

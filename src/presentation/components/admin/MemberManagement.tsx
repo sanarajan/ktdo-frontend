@@ -17,6 +17,38 @@ import type { RootState } from '../../../store';
 import { UserRole } from '../../../common/enums';
 import { SUCCESS_MESSAGES } from '../../../common/successMessages';
 import { ERROR_MESSAGES } from '../../../common/errorMessages';
+import { API_BASE_URL } from '../../../common/constants';
+
+const getImageUrlForPrint = (url?: string) => {
+    if (!url) return 'https://via.placeholder.com/150';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    const serverUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+    return `${serverUrl}/${url.replace(/^\//, '')}`;
+};
+
+async function getCmykPrintBase64(photoUrl: string): Promise<string> {
+    const originalImageUrl = getImageUrlForPrint(photoUrl);
+    if (originalImageUrl.startsWith('data:')) return originalImageUrl;
+
+    const cmykUrl = `${API_BASE_URL}/admin/print-image-cmyk?url=${encodeURIComponent(originalImageUrl)}`;
+
+    const response = await fetch(cmykUrl, {
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        throw new Error('CMYK profile conversion failed');
+    }
+
+    const blob = await response.blob();
+
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
 
 export const MemberManagement = () => {
     const [members, setMembers] = useState<any[]>([]);
@@ -93,9 +125,16 @@ export const MemberManagement = () => {
         }
 
         try {
-            const base64Image = await getBase64(member.photoUrl);
+            let printPhoto: string;
+            try {
+                printPhoto = await getCmykPrintBase64(member.photoUrl);
+            } catch (error) {
+                console.warn('CMYK print-photo conversion failed. Falling back to original image.', error);
+                printPhoto = await getBase64(member.photoUrl);
+            }
+
             const blob = await pdf(
-                <IdCardDocument key={Date.now()} driver={{ ...member, photoUrl: base64Image }} />
+                <IdCardDocument key={Date.now()} driver={{ ...member, photoUrl: printPhoto }} />
             ).toBlob();
 
             if (!blob) {
